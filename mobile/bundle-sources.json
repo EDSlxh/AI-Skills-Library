@@ -1,11 +1,11 @@
 {
   "repository": "EDSlxh/AI-Skills-Library",
-  "source_digest": "943cb5ed853a9ecbd9aacf5e8bdf2e099f14659e488a3b1b1fa022a8c2f37be7",
-  "bundle_sha256": "38fad53c88ecdbe8b8ab7d6a800702d736b59ac74ed0770db8767df82ccb6bc8",
+  "source_digest": "a87b2cb8f414613e99128dfd21fb3c73d47006c9f29d101156a68c4f7c50845a",
+  "bundle_sha256": "d863c9db160c1e87202cb153e5b5dfa192a4d9f55857b7f86da1dc2454f5d6e4",
   "sources": [
     {
       "path": "SKILLS.md",
-      "sha256": "b01d84d24dddeaafb4e645121ec3f534843a5e809174d986c0e6657792847b7b"
+      "sha256": "29b03a2637eeeb2afa8d5f63b78968f1060e5d24221ad997d51563240d8580eb"
     },
     {
       "path": "ai-skills/01-product/grilling/SKILL.md",
@@ -62,6 +62,98 @@
     {
       "path": "ai-skills/06-learning/learn-video/SKILL.md",
       "sha256": "e4c5bba60b1fe6d74f2783f4cc6101a877b84c6eaba898cc86f87d7442025752"
+    },
+    {
+      "path": "ai-skills/06-learning/learning-cards/SKILL.md",
+      "sha256": "28fc012d216d4a648c2f40479f78e2f2ac2f5f783646939bd5e03e182b73852c"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/aerial.md",
+      "sha256": "0eb49120f89dc80ee4e0b3514f33efaa911a9e41ecc0841841cd90a85b4fa09b"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/clues/global.md",
+      "sha256": "eb36c394f7414a8c0fa8d0fad9c953aa2bd669015c72c60bec830971106a534e"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/corridors.md",
+      "sha256": "f4699c770077ce1d56df3dbae377b9d803ffa7af02252fde2a101711fa5e6a96"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/data-sources.md",
+      "sha256": "44944445c09ca72e52506a641f6a5b9c9b41407cc315d6e15e2f84de3107c801"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/geometry.md",
+      "sha256": "45d2495c0fda109dd5862ac0c70a8902d078f7ed7526e9891b50710e48bcc510"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/observe.md",
+      "sha256": "eaef66db7dc3a3d963b27990d206034366774c8791b652df30cad2077cd90bdb"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/search.md",
+      "sha256": "6f6ec9b381aa24a0d440246d373ce30318e866562c3f6b314b8c52207c91fd12"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/sky.md",
+      "sha256": "9eddc7b09006a8fc7f0de021d614ebc5fcd13e4820362e36b72254d675b27f4e"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/references/verify.md",
+      "sha256": "281c827f4997389488cb45b0ec075800aabcc4a2220818ef2b202d7c29840105"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/_template/clues.md",
+      "sha256": "c0474312161f0a65beece08f448b86ed6b472ce7c52676b5ab2963c7a981f045"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/ca/clues.md",
+      "sha256": "76ba4a2de8aa1aa5c3ffa5adc40bb34518697a272ab183439c48950019405822"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/cn/clues.md",
+      "sha256": "801117854cf4071e958fbc805ca9db1718c877b5c7dd6988aacc22f532cc0804"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/cn/search.md",
+      "sha256": "c9a7d52cae83ebe3b61e1c9eec110531724e4c7441edae45f74d7f2b8837bfe1"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/il/clues.md",
+      "sha256": "8405ccd8223573dd999c384fc38a4486ae2fb37ccdfc335334708b6902f2db33"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/jp/clues.md",
+      "sha256": "6c0b901e33f8ec2b0a84cbb12c30b4e040b2e75f0e4926ebc90712d10da03690"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/lk/clues.md",
+      "sha256": "1880451dee9007bfe5f4fc7cbd377da39c78212fb4893fc50b9be6faeb6d4669"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/mm/clues.md",
+      "sha256": "e365048b0e2708e450f3f43b087b8603367a15253d80f5a917da5a3deb319cdb"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/mx/clues.md",
+      "sha256": "eca356b2ef213d2c28d941f36163cb05e40669b8725d5444cbdf3404ab508178"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/tr/clues.md",
+      "sha256": "5835294eaa50d38c282d96c93afb4992b21e2bd0023313000954d86145216fc6"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/regions/us/clues.md",
+      "sha256": "becabecda31e5902fd227e49add5e985f49d2aaaa6d2dc3054c0e7bb712936db"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/SKILL.md",
+      "sha256": "e8343b56b5216a08f6c7d7a870d70af648859157a3d938e438efb29b01650fea"
+    },
+    {
+      "path": "ai-skills/07-geolocation/geo-sleuth/UPSTREAM.md",
+      "sha256": "56a6a9d5b188a514a6827353e1c2c1d25a6230e1129efea7e931684592fb6c2d"
     }
   ]
 }

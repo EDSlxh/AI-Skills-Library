@@ -1,0 +1,9 @@
+.local-sync/
+__pycache__/
+*.py[cod]
+.geo-cache/
+node_modules/
+.venv/
+.env
+.env.*
+!.env.example

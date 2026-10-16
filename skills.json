@@ -1,0 +1,14 @@
+{
+  "skills": [
+    {"name": "grilling", "path": "ai-skills/01-product/grilling"},
+    {"name": "requirement-to-plan", "path": "ai-skills/01-product/requirement-to-plan"},
+    {"name": "android-app-engineering", "path": "ai-skills/02-android/android-app-engineering"},
+    {"name": "transaction-screenshot-ocr", "path": "ai-skills/03-vision/transaction-screenshot-ocr"},
+    {"name": "ledger-data-sync", "path": "ai-skills/04-data/ledger-data-sync"},
+    {"name": "test-debug-review", "path": "ai-skills/05-quality/test-debug-review"},
+    {"name": "learn-scientifically", "path": "ai-skills/06-learning/learn-scientifically"},
+    {"name": "learn-video", "path": "ai-skills/06-learning/learn-video"},
+    {"name": "learning-cards", "path": "ai-skills/06-learning/learning-cards", "managed_by": "learning-cards"},
+    {"name": "geo-sleuth", "path": "ai-skills/07-geolocation/geo-sleuth"}
+  ]
+}

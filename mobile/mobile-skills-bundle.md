@@ -2,7 +2,7 @@
 
 仓库：https://github.com/EDSlxh/AI-Skills-Library
 
-源文件集合 SHA256：`943cb5ed853a9ecbd9aacf5e8bdf2e099f14659e488a3b1b1fa022a8c2f37be7`
+源文件集合 SHA256：`a87b2cb8f414613e99128dfd21fb3c73d47006c9f29d101156a68c4f7c50845a`
 
 这是上传到 ChatGPT 项目 Sources 的完整流程资料。先依据下方 SKILLS.md 选择 Skill，再按来源路径查找正文和必要引用。文件已嵌入本包时不必再次联网；包内引用链接已改为对应来源段落；代码中的相对路径仍按来源文件位置解析。这个摘要用于比较包版本，不是 Git 提交号。
 
@@ -20,6 +20,8 @@
 | --- | --- | --- |
 | learn-scientifically | 用户希望学会主题、练习纠错、复习、续学或查询实际学习进度 | [科学学习](#source-d6837ab26b794c18) |
 | learn-video | 从视频、音频或字幕取得原文，再整理或应用知识；用户希望自己学习时取得材料后衔接科学学习 | [学习视频](#source-195be17fe2d6a7e2) |
+| learning-cards | 已有可用的 MCP Apps 题卡服务，需要呈现题卡并核对真实提交 | [聊天内题卡](#source-e8879c448a25d456) |
+| geo-sleuth | 根据照片查找拍摄位置或时间，需要脚本、地图与可核验的证据 | [照片定位](#source-61a7235a5ec17cfc) |
 | grilling | 用户要求盘问或压力测试重要想法，或关键产品、架构决策确需澄清 | [需求与设计压力测试](#source-40569f64df1e1ba7) |
 | requirement-to-plan | 已有明确的软件需求，需要实施计划、范围和验收标准 | [需求到实施计划](#source-ac38da75ffef8ebe) |
 | android-app-engineering | 实际设计、实现或修改 Kotlin、Compose 等安卓应用工程 | [Android 工程](#source-d480e2ded6aad890) |
@@ -1028,3 +1030,2033 @@ description: "当用户说‘学习视频’、‘帮我学这个视频’或要
 - “保存或更新笔记”：按当前授权保存，并告知文件位置。
 
 用户要求更改范围、目的或深度时，只更新受影响部分。沿用本技能已明确的默认处理方式；平台、分集、深度等单次选择不要默认为永久设置。用户后续的明确要求优先于默认值。
+
+
+---
+
+<a id="source-e8879c448a25d456"></a>
+
+## 来源文件：ai-skills/06-learning/learning-cards/SKILL.md
+
+---
+name: learning-cards
+description: 在支持 MCP Apps 的聊天界面中呈现真实可点选、可提交的学习题卡，提供可选提示和补充理由。用于互动带学、基础诊断和练习；不用于弹出式问卷，不把生成题卡当成用户已作答。
+---
+
+# 聊天内科学学习题卡
+
+题卡直接嵌在聊天里，不弹窗、不设答题时限。用户提供的学习时长只用于选内容。讲解、题目核对、评分与复习沿用当前教学目标；可用时结合 `$learn-scientifically`。本插件只呈现题卡和收集真实提交，不自动认证掌握。
+
+1. 先核对题意、条件、选项和参考解。一次调用 `show_learning_card` 呈现一题，使用稳定 `questionId`，给出 `title`、`prompt`、`choices`，按需加入 `unitId`、`hints` 和 `allowFreeText`。不要把参考答案写进卡片或默认选中正确项。
+2. 等用户点击提交或在聊天中明确作答。点选、打开提示、界面反馈、等待和工具发送成功都不是最终答案。不能替用户调用 `submit_learning_answer`；提示和提交工具由界面响应真实用户操作。
+3. 用户界面的提交通知包含 `cardId`；用 `get_learning_card_state` 核对实际记录后再反馈。保留选项支持与 `hintsUsed`，不把选择成功当成自由回忆或独立应用通过。补充文字可能为空，证据不足时只补问必要步骤。
+4. 已有待答题时恢复原题和原选项顺序；修改题干、选项或重新练习时使用新题目标识。不要把重发题卡当作新成绩，也不要以耗时、迟答或离开判错。
+5. 若客户端没有渲染内嵌组件、回传失败或插件进程已重启，说明实际状态。只验证了工具通信时只报告工具通信成功。不能用 Markdown、截图或本地 HTML 冒充已接通当前聊天；不改用弹窗，也不自行部署网站。
+
+默认答案只保留在当前本地插件进程内，不写学习档案。用户明确要求保存时才按现有授权保存真实结果；不要声称进程状态可永久恢复。
+
+
+---
+
+<a id="source-0b47c70946ea1a63"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/aerial.md
+
+# Aerial branch: airplane-window photos, drone top-down shots
+
+Ground-photo signs, license plates and street view are all useless here; what works is **aircraft registration → flight track**, or **landforms + hydrology → river section → line-to-point → 3D terrain comparison**.
+Sources: v008 (large-river gorge from an airplane window), v012 (frozen lake through a cabin window + registration), v010-2 (gorge by drone).
+
+## 1. Look for the aircraft registration first
+
+The registration on the wing's upper and lower surfaces, engine nacelles and rear fuselage (Chinese civil aviation: `B-` plus 4 characters; seen from a cabin window it's often upside down, so check each character).
+
+1. Look up this aircraft's flight history by registration on Flightradar24 or FlightAware (the free tier covers about 7 days; longer needs a paid tier; the paid tier can download KML/CSV tracks for single flights).
+2. **Search the time window backward from the posting time**: casual photos were most likely taken the same day or a few days before (in v012 the correct flight was the one on the posting day, yet the creator went through all 114 flights over two months). If EXIF has a capture time, use it directly.
+3. Filter the flight list layer by layer with conditions directly visible in the photo:
+   - Day/night: takeoff and landing times against sunrise and sunset
+   - Climate: the latitude band matching ice, snow cover, vegetation color
+   - Terrain: whether the route passes over this kind of mountains/plains
+   - Heading: the flight direction computed from the sun (see section 3)
+4. Export the tracks of the remaining flights and look only at features on **the window side**, within visual range (tens of kilometers at cruising altitude).
+
+Without a registration, cruising altitude, heading and common airways (which routes pass over this area) can serve as weak supporting evidence.
+
+## 2. Which side you're sitting on, which way the nose points
+
+- The wing's **trailing edge** has flap tracks and a row of fairings; the leading edge is smooth. Whichever side of the frame the trailing edge faces, the tail is on that side.
+- Nose toward the left of the frame = right-side window; toward the right of the frame = left-side window.
+- This determines which side of the flight track the ground features are on.
+
+## 3. Infer heading from the sun (must be computed for the time)
+
+- Whichever side the ridge shadows fall on, the sun is on the other side; lit slopes and reflections on water also work.
+- **Don't assume "shadows point north"**: north of the Tropic of Cancer, shadows point due north only at noon; at 37° N at 10 a.m. in summer the shadow is already off by about 70°, and on winter mornings shadows are closer to northwest.
+- With candidate flights, compute the sun azimuth at the time each one passes over the area (`sun.py pos --at … --time …`), then compare it with the lighting direction in the photo; this can tell right from wrong among several candidate flights (in v012 it could have been settled without asking the puzzle setter).
+- When the time is completely unknown, direction is only a weak constraint and can't be used to exclude candidates.
+
+## 4. No registration: landforms + hydrology
+
+1. Identify the river (width, color, landforms on both banks) → list similar river sections → exclude by orientation and bank terrain → line-to-point (bridges, dams, ferries) → go through the candidate table one by one. Steps and commands are in `corridors.md` section 5.
+2. For the **only man-made object** in the frame (a regular, light-colored patch on a ridge, a row of colored roofs, a tunnel portal), first describe its shape and position; don't label it "ordinary village" and discard it. It's often the anchor:
+   - Crop it and search on short-video platforms and Baidu image search (v010-2 hit the scenic area's official account)
+   - After locating it, check its name and size against map POIs + local news (v008)
+3. Once the anchor is fixed, find a tangent line like "ridge — feature edge" in the photo and draw the same line on satellite imagery; the camera position is on that line (v010-2).
+
+## 5. 3D terrain comparison (replaces street view)
+
+On pure top-down satellite imagery, loess gullies and mountains all look alike; lower the view to near the photo's depression angle and the differences show.
+
+```bash
+# airplane window: give absolute altitude (cruise about 8000–11000 m, a few thousand meters during descent); negative pitch looks down
+uv run scripts/terrain.py view --at <candidate lat,lon> --alt 9000 --heading 90 --pitch -35 --hfov 60 --range 40000 --zoom 11 --out a.png --photo puzzle.jpg
+# drone: one or two hundred meters above ground
+uv run scripts/terrain.py view --at <candidate lat,lon> --height 150 --heading 300 --pitch -20 --hfov 70 --range 15000 --out d.png --photo puzzle.jpg
+```
+
+- Compare ridgeline outlines, valley orientations and roads on ridges; for water bodies, compare bulges and inlets in the outline.
+- High-altitude oblique views flatten shapes along the sight-line direction and skew them slightly; allow for perspective distortion when comparing; when needed, rotate and stretch the photo and overlay it on satellite imagery.
+- Elevation data is about 30 m per cell: large mountain masses and river valleys are reliable; don't force comparisons of details smaller than a hundred meters.
+
+## 6. Verify "what it is" with environmental data too
+
+- Uniformly white water with no reflection, seen from high altitude, is most likely ice or snow on ice; after locating, confirm with the local historical daily temperatures (v012).
+- Counterexamples: salt lakes, salt pans, dry lakebeds, turbid silty water, sun glint, thin cloud.
+
+## Common mistakes
+
+- Going through the entire flight list instead of checking "closest to the posting time first" (v012).
+- Using "shadows point north" to infer heading or river orientation, and excluding candidates with it as a hard condition (v008, v012).
+- Listing mountain ranges from memory and missing the one containing the answer (v012 didn't explain why the Lüliang Mountains were left out).
+- Settling the final pick among a few by asking the puzzle setter, instead of using an independently doable test like sun azimuth (v012).
+
+
+---
+
+<a id="source-c326a04ba769a4d3"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/clues/global.md
+
+# Cross-country clues
+
+Clues that tell countries and continents apart, or that work the same way in many countries. Clues that only narrow things down inside one country live in that country's region pack (`regions/<cc>/clues.md`; `regions.py list` shows which exist).
+
+General order when the country is still open: driving side and plate shape to exclude continents → script and language of the text, phone calling codes → plate style to the state/province → infrastructure and municipal fixtures → architecture and vegetation.
+
+## General
+
+### Driving side, driver's seat
+- Look for: whether the driver's seat is on the left or the right; which side of the road traffic keeps to; which way cars parked at the roadside face
+- Points to: right-hand traffic excludes the UK, Ireland, Japan, Australia, New Zealand, South Africa, India, some Southeast Asian countries, and Hong Kong/Macau; and vice versa
+- Strength: strong (exclusion type; one clue excludes a batch of countries)
+- Counterexamples: left-hand-traffic countries have a few imported left-hand-drive cars; **the photo or video may be mirrored**, first check for reversed text
+- Sources: v009 v010-4
+
+### Plate aspect ratio
+- Look for: the plate's shape; no need to read the characters
+- Points to: long narrow strip → Europe; rectangle close to 2:1 → North America; refine further by background color and graphics
+- Strength: medium
+- Counterexamples: Japanese plates are also close to 2:1 (exclude them with the driver's seat side); some European vehicles carry square plates; motorcycle plates are generally squarish
+- Sources: v009
+
+### Plate background and graphics in countries that issue plates by state/province
+- Look for: when the characters can't be read: the plate's overall background color, color bands, central graphic (state or provincial flag), border color
+- Points to: state/province level (US, Mexico, Canada, Brazil's old format, Australia, etc.)
+- Strength: medium (filter to a few states against a chart of state plate designs; narrows by an order of magnitude in one step)
+- Counterexamples: out-of-state vehicles crossing state lines (especially common on freight corridors and in border cities); old and new formats coexist, and reference charts go out of date; overexposure in strong light renders light-colored graphics as white
+- Sources: v002 v009
+
+### Official bilingual or multilingual signs
+- Look for: two languages with the same content on one official traffic sign or street-name sign
+- Points to: an officially multilingual admin area, not "near a country that speaks that language" (e.g., German-Italian bilingual signs in Italy → Province of Bolzano/South Tyrol)
+- Strength: strong
+- Counterexamples: bilingual private shop signs don't count; foreign-language signs added for tourists in tourist areas don't count
+- Sources: v001
+
+### Sub-brands and business lines of chain brands
+- Look for: small marks on the sign besides the parent brand (truck tire retreading, commercial vehicle service, etc.)
+- Points to: sub-brands have far fewer stores, so listing all their stores nationwide gives a candidate point list; also suggests a freight corridor or the outskirts of an industrial zone
+- Strength: weak (alone); medium together with a store search
+- Counterexamples: store data on maps is incomplete
+- Sources: v002
+
+### Ads for regional consumer goods
+- Look for: drink and snack brand ads on vehicles and along the street
+- Points to: the country or region where the brand mainly sells
+- Strength: weak
+- Counterexamples: multinational brands, imported brands
+- Sources: v007
+
+### Bus operator abbreviation + route number
+- Look for: the operator abbreviation and route number at the top of the bus front and rear
+- Points to: city; route number → look up the route corridor with `osm.py route` and search along it
+- Strength: strong (to the city); with a route map, to one line
+- Counterexamples: second-hand imported buses keep text from the country of origin on the body, so it can't be used to judge the country; route numbers get changed
+- Sources: v007
+
+## Europe
+
+### Roof color: red terracotta tile vs gray pitched roofs (northern Italy, etc.)
+- Look for: the color of roofs across an area in distant views of the photo or in satellite imagery
+- Points to: Italian-speaking areas are mostly red terracotta; many gray or dark pitched roofs → towns in the German-speaking cultural area (Austria, Germany, South Tyrol)
+- Strength: weak (meaningful only as a statistic over a whole area)
+- Counterexamples: new apartment buildings often use flat roofs or gray metal roofs
+- Sources: v001
+
+### Arch form: round or pointed
+- Look for: whether door and window arches are round or pointed; biforate windows (two small arches inside one large arch)
+- Points to: round arch → Romanesque or Renaissance; pointed arch → Gothic. If sources say a city has few medieval remains but the photo shows an intact "medieval courtyard" → prefer 19th-century-or-later replicas (exposition pavilions, mock-historic streets, film studio sets)
+- Strength: weak (narrows the building type, helps choose search terms)
+- Counterexamples: there are many replicas; reverse image search in a Chinese-language interface mixes in large numbers of modern-era Chinese red-brick buildings
+- Sources: v004
+
+### Uniform streetlight design within an area
+- Look for: streetlight pole color, lamp head shape
+- Points to: procured uniformly by one city or area; use it for spot-check confirmation between candidate towns
+- Strength: weak (for verifying, not for finding)
+- Counterexamples: one manufacturer's lights are sold to many cities
+- Sources: v001 v009
+
+## Inherited standards (overseas territories, former colonies)
+
+When you recognize infrastructure built to "country X's standard", the candidates are the home country + overseas territories that keep the home country's standards + some former colonies. Intersect that with the IP location and the continent the puzzle setter named, and often only one place remains.
+
+### Arched crossarms on the French distribution grid
+- Look for: a crossarm arching upward on top of a concrete or metal pole, three conductors hanging from suspension insulators (the "arched" layout of medium-voltage lines); identical poles lined up into the distance
+- Points to: the French grid system: metropolitan France and the overseas departments that keep its standards; some former North African colonies have similar pole types
+- Strength: medium (narrows the whole world to a few regions in the French system; then use IP, continent, and climate to fix one)
+- Counterexamples: border areas of neighboring countries have similar styles; former colonies later changed pole types; in small distant images an ordinary straight crossarm is easily seen as arched, so zoom in to verify
+- Sources: v013
+
+## South Asia
+
+### Sinhala script on official signs (Sri Lanka)
+- Look for: Sinhala script (rounded, looping letters with no line along the top, unlike Hindi script) on road signs, street-name boards and government signs; official signs often repeat the same text in Sinhala, Tamil and English, but many carry only one or two of the three
+- Points to: Sri Lanka; Sinhala is an official language there and is written almost nowhere else
+- Strength: medium
+- Counterexamples: Sinhala on temples, shops or embassies outside Sri Lanka; Malayalam (Kerala, India) is also rounded and can pass for Sinhala at low resolution; when only Tamil and English are visible (Sinhala cropped, blurred or absent from that sign), the sign can be mistaken for Tamil Nadu, India, so Tamil alone does not exclude Sri Lanka; private shop signs follow no official layout
+- Sources: Constitution of Sri Lanka, Articles 18–19 (https://www.constituteproject.org/constitution/Sri_Lanka_2015.pdf?lang=en); Wikipedia "Sinhala script" (https://en.wikipedia.org/wiki/Sinhala_script)
+
+
+---
+
+<a id="source-ec81c5c56df0c896"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/corridors.md
+
+# Linear corridors and structured queries
+
+Use when there are no landmarks and no text, but the image shows a **route number, railway, power line, large river or expressway**.
+The core idea in two sentences: **first turn the area into a line, then look for discrete points on the line**; **when several kinds of infrastructure share the frame, use a query to enumerate every co-occurrence point in the whole province at once**; don't scan the whole map.
+Sources: v002 v003 v007 v008 v010-3 v011.
+
+Script: `scripts/osm.py` (find / near / crossings / route / along / intersect / street-scan / buildings / geom / raw). Output is `{name: [lat, lon]}`, which goes straight into `tiles.py mark` to plot the points and `tiles.py sheet` for numbered candidate thumbnails.
+OSM data in China is incomplete: a hit is a candidate; a miss can't be used as grounds for exclusion.
+
+Known gaps in OSM for China (measured in blind tests):
+- `building` and `parking` are basically empty in counties and townships, and missing even in many urban areas of prefecture-level cities — **in China, don't use buildings or parking lots as co-occurrence conditions**.
+- Many rivers have only a centerline and no water-area polygon; the riverbank shape can only come from satellite imagery.
+- A whole-province query can take several minutes, and public servers also rate-limit; run it in the background, or run provinces separately.
+- In mountain cities, curves, hairpin turns and retaining walls are everywhere; don't use them as co-occurrence conditions (in a blind test the core of the main urban area had nearly 700 hairpin turns; adding "school, arterial road" still left dozens, none of them right).
+- **Check coverage before enumerating candidates**: `osm.py coverage --areas <district A>,<district B> --filter '<feature>'`. If one candidate district has noticeably fewer features, the co-occurrence query silently excludes all of it (common in China: almost none of a whole district's schools or running tracks are mapped).
+
+## 1. Route number → corridor
+
+The operator abbreviation + route number on top of a bus's rear, bus stop signs, metro line numbers, origin and destination on long-distance coach signs (v007: operator abbreviation + route number on the bus rear → one route corridor).
+
+```bash
+uv run scripts/osm.py route --bbox <s,w,n,e> --kind bus --ref <route number> --step 150 --out route.json
+uv run scripts/tiles.py fetch <center of a segment along the route> --zoom 17 --radius 4 --out seg.jpg
+uv run scripts/tiles.py mark seg.jpg --points route.json --out seg_route.jpg
+```
+
+- When OSM doesn't have the route, search "<city> <route number> 路 线路图 / bus route" (路 线路图 = bus route map), then on a map manually record the coordinates of a few stops and connect them.
+- Before scanning along the route, combine what is "behind the buildings" and "behind the camera" in the photo into filter conditions: construction hoarding or tower cranes showing above the rooftops = a construction site behind; a glass curtain wall reflecting nothing but trees = green space across the street (v007).
+
+## 2. Railways
+
+| What you see | What it implies | How to query |
+|---|---|---|
+| Railway company name on a level-crossing sign (JR西日本 (JR West), private railway names) | Operating area or specific line | The company's operating area |
+| Catenary masts on one side only | Usually a single-track electrified railway (a small share nationwide) | `["railway"="rail"]["electrified"="contact_line"]["tracks"="1"]` (tracks is often untagged in China) |
+| Masts on both sides, or portal gantries spanning the tracks | Double track | — |
+| 4 tracks side by side at the same level crossing | Quadruple track or several lines running in parallel; only a few sections nationwide | `osm.py crossings --kind level_crossing`: OSM has one crossing node per track, and the script estimates the track count from the node count |
+| High-speed rail viaduct | Along a high-speed line | `["railway"="rail"]["highspeed"="yes"]["bridge"]` |
+
+```bash
+# All level crossings on a stretch of railway, by track count (each is labeled "~N tracks")
+uv run scripts/osm.py crossings --bbox <s,w,n,e> --line '["railway"="rail"]' --kind level_crossing
+```
+
+Order for railway scenes: line (company name, track count, electrification) → station (terrain conditions such as by the sea, by a river) → compare each level crossing or bridge along the line against satellite imagery.
+The web version of OpenRailwayMap (openrailwaymap.org) shows line class and single/double track very clearly; good for manual comparison.
+
+## 3. Power lines
+
+- Tower type only separates "transmission / distribution": tall steel-tube monopoles or angle-steel lattice towers with long insulator strings = transmission; short concrete poles or wooden poles = distribution.
+- Read the voltage from bundled conductors (common in China): single conductor ≈ below 220 kV, bundles of 2 = 220–330 kV, **bundles of 4 = 500 kV**, bundles of 6 = 750 kV or ±800 kV DC, bundles of 8 = 1000 kV.
+- When you can't count the conductors at a distance, look for small dark dots at intervals along the line (spacers): present → bundled conductors, treat as ≥220 kV; if you can't narrow it further, don't commit to a single voltage.
+- The voltage can also be looked up in reverse: find the same type of tower in street view at any known location, click that line on OpenInfraMap (openinframap.org) to see its voltage, and you get "this tower type ≈ X kV" (v002).
+- **Useless alone, useful only in intersection**: only crossing or parallel relationships with railways, rivers and expressways narrow things down. The angles between several linear features (power line perpendicular to the railway, parking spaces perpendicular to the railway) are a spatial signature visible at a glance on satellite imagery (v011).
+
+OSM tags: `["power"="line"]["voltage"="500000"]`, `["power"="tower"]`.
+
+## 4. Co-occurrence queries (several kinds of infrastructure in the same frame)
+
+Write the features that appear together in the image and have OSM tags as "B within x m of A, C within y m of B", and enumerate over a whole province or city (v010-3: high-speed rail bridges within 700 m of a power tower, rivers within 100 m of the bridge → a few dozen sites in the province → filter by plain/mountain and distant mountain outline).
+
+```bash
+uv run scripts/osm.py near --area <full name of the province-level division> \
+  --a '["railway"="rail"]["highspeed"="yes"]["bridge"]' --b '["power"="tower"]' --within 700 \
+  --c '["waterway"="river"]' --within-c 100 --out cands.json
+```
+
+- **Loosen** distance thresholds to double your estimate from the image; better too many than missing one, then filter with terrain, distant mountain outline and satellite imagery.
+- `--area` takes the full admin-division name used in OSM (e.g. "江苏省" (Jiangsu Province), "深圳市" (Shenzhen City)); if it isn't found, switch to `--bbox`.
+- Over 200 results: add conditions; don't go through them one by one.
+- Adding `--report near.json` writes each candidate's actual distance to B and C and its key tags (voltage, electrification, line name), for ranking.
+- **Rank, then look**: distance to towns and roads (`--rank-near`), whether the voltage class matches the image, whether the actual distance is close to the image estimate, terrain (`terrain.py elev` to see whether the railway is on a slope).
+- `--rank-near` is only a rough ranking: in China, OSM town nodes, hotels and residential land-use tagging are all uneven (residential land use even includes villages, so ranking by it is almost useless). Town nodes `'["place"~"^(city|town)$"]'` are relatively the most stable; for service areas use `'["highway"="services"]'`.
+- **What actually narrows candidates is attributes you can verify in the image**: countable bundled conductors → voltage, visible catenary → electrification, the track count at a level crossing. One verified attribute often cuts 80% of candidates, more effective than any distance ranking; if you can't verify it, widen it to a range (e.g. 220–500 kV); don't guess a single value.
+- **Stopping rule**: view thumbnails in rank order with `tiles.py sheet`; if there's still no match after 100, stop and report "province/city level + candidate areas + why they didn't match"; don't keep scanning by eye.
+
+## 4.1 Crossings of two kinds of lines (railway × power line, river × road)
+
+```bash
+uv run scripts/osm.py intersect --area <full name of the province-level division> \
+  --a '["railway"="rail"]["electrified"="contact_line"]' --b '["power"="line"]["voltage"~"^(220000|500000)$"]' \
+  --bend-min 25 --bend-within 100:900 --rank-near '["place"~"^(city|town)$"]' \
+  --cluster 600 --out crossings.json      # for voltage, write only the range you can verify in the image
+uv run scripts/tiles.py sheet --points crossings.json --zoom 18 --out crossings_sheet.jpg
+```
+
+- `--bend-min`: marks crossings where B has a bend away from the crossing point (angle tower, river bend); by default it **only labels them and ranks them first; it doesn't delete**.
+- Only `--bend-filter` actually deletes; deleted ones are written to `<out>_dropped.json`. Use it only when "the line turns at this tower, and which side of the crossing the tower is on" is a fact you confirmed with your own eyes in the image; a bend position inferred from a distant view doesn't count.
+- `--ring lat,lon:min_m:max_m`: keep only crossings within this distance ring around a point (e.g. a distance computed from the landmark's pixel size and the field-of-view range).
+- Put voltage and electrification into the filter only when you can count the bundled conductors or see the catenary in the image; otherwise loosen them into ranking.
+- Labels carry the line name, voltage, electrification, bend, and distance to the reference feature; look first at the ones that match the image.
+
+## 4.2 Street-view geometry template (no anchor, but a clear street layout)
+
+The photo only narrows to town level, but the layout in the frame is clear: the camera looks down a street, with a large building on the right and a wall and garden on the left. Write the layout as a template and filter the whole town at once:
+
+```bash
+# camera heading (a range from sun.py facing or shadows) → street bearing 320°–80°; a building with a footprint ≥250 m² 4–22 m to the right; no building 3–10 m to the left
+uv run scripts/osm.py street-scan --bbox <town s,w,n,e> --bearing 320:80 --right building --left empty \
+  --band 4:22 --clear 3:10 --ahead 0:40 --min-area 250 --out cands.json
+uv run scripts/tiles.py sheet --points cands.json --zoom 19 --out cands_sheet.jpg
+```
+
+- By default it assumes the camera stands at an intersection looking down the side street; if not at an intersection, add `--anywhere --every 30`.
+- Regression check: on one video puzzle, a whole town's 2265 roads and 5132 buildings filtered down to 38 candidates; the correct intersection was 3 m from a candidate point.
+- Only suitable where OSM building data is complete (Europe and North America, Japan, the cores of some large Chinese cities); don't use it in Chinese counties and townships.
+- Common tags: `["railway"="level_crossing"]`, `["man_made"="water_tower"]`, `["aerialway"]` (aerial ropeways, cable cars), `["bridge"="yes"]`, `["waterway"="dam"]`, `["leisure"="pitch"]`, `["amenity"="fuel"]`, `["man_made"="communications_tower"]`, `["historic"]`, `["tourism"="attraction"]`.
+
+## 4.3 Linear infrastructure × terrain: no text, only infrastructure and an unidentifiable mountain
+
+Section 4's co-occurrence queries can only use OSM tags; "a steep mountain in the distance" can't be written into them. The method is to connect each point on the infrastructure to elevation data, compute the horizon, and filter a whole large region at once. This is the single source for the method (one real case: about 27,000 railway-bridge segments in one large region (about 25,000 of them electrified or untagged) → 171 clusters, ground truth among them).
+
+1. `osm.py geom '<infrastructure filter>' --bbox <large region> --out lines.geojson` to get the lines.
+2. `terrain.py scan` samples points along the lines, computes a 360° horizon at each point from Terrarium elevation, filters by shape conditions and clusters:
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/terrain.py scan --lines lines.geojson --out hits.json \
+  [--clusters-out clusters.json] [--bbox s,w,n,e] [--step 400] [--zoom 10] \
+  [--near-flat 40] [--near-radius 1200] [--near-step 300] \
+  [--min-peak 4.5] [--max-low 1.2] [--flat-run 20] [--min-low-deg default=--flat-run] [--flat-run-cap 100] \
+  [--eye 1.5] [--az-step 5] [--dist 1500,2000,2500,3000,3500,4000,5000,6000,7000,8000,9000] \
+  [--skip-tag electrified=no ...] [--cluster-km 3.5] [--threads 8] [--max-tiles 4000] [--allow-missing]
+```
+
+- `--step` is the sampling spacing along the line (meters); `--zoom` is the elevation tile level (at z10 one cell is about 150 m; good enough, with few tiles).
+- Filter conditions use only shapes that don't depend on heading and are visible in the image: `--near-flat` = relief within `--near-radius` m is at most this many meters (flat nearby), `--min-peak` = within a few km there must be a mountain at elevation angle ≥X°, `--max-low` = how low counts as a flat horizon, `--flat-run` = how many continuous degrees the flat horizon must span. `--dist` is the distance ladder used to compute mountains.
+- `--skip-tag` skips lines by tag (repeatable); `--cluster-km` is the clustering radius for hits. If the tile count exceeds `--max-tiles` it exits with an error; shrink `--bbox` or lower `--zoom` first.
+- `--cache` uses the same elevation cache as `terrain.py` (default `.geo-cache/dem`).
+- Output `hits.json`: `{params:{...}, n_samples, n_hits, n_clusters, hits:[{lat, lon, h0: ground elevation m, max_ang: highest horizon elevation angle °, az: its azimuth °, relief: max relative height difference in that azimuth m, flat_run_deg: length of the flat horizon right next to the mountain °, name/hs/elec/id: the line's OSM tags}...], clusters:[...]}`. Clusters are sorted by `max_ang` descending; a cluster's representative is its steepest point (same fields as `hits`, plus `n` = number of points in the cluster); `--clusters-out` writes a separate JSON with only the cluster list.
+3. The resulting clusters go into the batch skyline scoring in `geometry.md` 7.4 (`terrain.py fit --hits`). Without EXIF it searches 13–135mm by default; if the leading clusters all want the longest (or shortest) focal, widen `--f35-range` and rerun before reading the ranking.
+
+- **When the mountain is right in front of you** (its foot a few hundred meters from the camera position), the defaults miss it: within the 1200 m `--near-radius` you are sure to climb onto its slope, and `--dist` starting at 1.5 km can't measure this mountain either. Shrink `--near-radius` to a few hundred meters (`--near-step` must be smaller than it, otherwise only the camera position itself is sampled and the flat-nearby check does nothing), and start `--dist` at 400 m. In hilly areas, loosening like this gives many candidates; when the skyline can't separate them, you need a second constraint.
+- **When mountains fill the whole frame** (no stretch of flat horizon anywhere), the flat-run condition rejects the ground truth: pass `--flat-run 0 --min-low-deg 0` to drop it and rely on `--near-flat` + `--min-peak`, then rank with `terrain.py fit`. If the skyline alone can't separate the top clusters (rms within a few px of each other), add the heading constraint from the line (view ≈ perpendicular to the line when the wires cross the frame nearly level): `terrain.py fit --perp-line lines.geojson`. When a lower near range stands in front of the far one, score both layers (`ridge --near/--near-clear`, `geometry.md` 7.4); the outermost skyline alone ranked look-alike ranges level with the right one.
+- **Set thresholds at about half the photo estimate**. At z10 one cell is about 150 m, peaks get flattened, and computed elevation angles come out low. In a real case, with thresholds set to the photo estimate, not a single point near the ground truth was kept; it came in only after loosening. Better too many than missing one; leave the count to the next ranking step.
+- How far the infrastructure is at the left edge, center and right edge of the frame is also an independent numeric constraint: use evenly spaced structures as a ruler (`geometry.md` section 3) to estimate the three distances, and pass them to `terrain.py fit` via `--line` / `--line-dist` for joint scoring.
+
+## 5. Large rivers: identify the river → river section → line-to-point
+
+1. **Three things to identify the river**: width (use houses, lanes, terraced fields on both banks as a ruler), color (sediment load), landforms on both banks (plain / high-mountain gorge / low, broken gullies). The three combined are more reliable than color alone (many rivers are yellow in flood season).
+2. **Determining the orientation** needs a time: compute direction from the sun (`sky.md`); don't assume "the shaded slope faces north".
+3. **Filter river sections by orientation + terrain on both banks**: list sections with the same orientation, the same width and the same landforms on both banks, and exclude them one by one.
+4. **Line-to-point**: find discrete structures on the line in the image — bridges (when the bridge deck isn't clear, look for a long thin shadow on the water), dams, ferries, tunnel portals, interchanges, docks — and list all such structures on this stretch of river. v008: an 850 km stretch of a large river → 26 river-crossing structures → 7 → 2 → 1.
+
+```bash
+uv run scripts/osm.py crossings --bbox <s,w,n,e> --line '["waterway"="river"]["name"="<river name>"]' --kind bridge,dam,ferry --out crossings.json
+```
+
+5. **Go through the candidate table one by one**: for each point, ask only a few questions you can see directly in the photo (does the river bend within the view, is there a reservoir, are both banks mountains, is there a large settlement); go through all of them once, then compare in detail. **Criteria compare only the section within the photo's field of view** (v008 excluded a candidate using a bend outside the view and nearly filtered out the answer).
+6. When a few remain, compare ridgelines and the roads on them with `terrain.py view` or Google Earth's tilted view.
+
+## 6. Template comparison between cities
+
+When there are several candidate cities (v006: three candidate cities with similar layouts), write the large-scale structures in the photo as a template and compare city by city:
+
+- Water system: how many rivers, each one's orientation (combined with heading), confluence angle, whether there's a river island, river width, bridge positions, whether the far bank is urban.
+- Mountains: which side the mountain is on, how far from the urban area, whether there's a tower or statue on the summit.
+- Road network: positions of elevated roads, roundabouts and railways in the urban area.
+
+Features like river islands, whether rivers meet, and river width exclude at a glance; compare them first. Mind the satellite imagery's year (shorelines and river islands change with water levels and engineering works).
+
+## Common mistakes
+
+- Treating a probability bet as a filter: "green taxis are most common in Sichuan" so you only search Sichuan; "the top 20 cities" (v002, v006). These can add to a score; they can't exclude.
+- Treating co-occurrence in two samples as a rule: "both places with this kind of pole are next to a railway → there's a railway near the photo too" (v002).
+- Stacking inferences on a false premise: "snowy mountains in the distance → must be in a certain province → search only that province's railways"; the premise wasn't verified, so everything after it is wrong.
+- Using an unverified interpretation as a hard filter: "the angle tower must be on the outer side of the crossing" — the true point was in the batch that got filtered out. Interpretations only rank; when nothing matches, first go back to the filtered-out ones.
+- Excluding because OSM has no result: missing lines are common in Chinese data.
+- Declaring failure when no candidate matches, without going back to check the filter conditions (hard rule 9).
+
+
+---
+
+<a id="source-4f0dec427f6868e2"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/data-sources.md
+
+# Scripts, data sources and coordinate systems
+
+## Script overview (`scripts/`)
+
+| Script | What it does |
+|---|--- |
+| `doctor.py` | Environment checks, browser launch, optional endpoint probes; English fixes and JSON output |
+| `exif.py` | GPS, capture time, equivalent focal length, camera heading |
+| `imgprep.py` | zoom (enlarge to read text) / edges (four edges, four corners) / variants (image-search variants) / grid (split into tiles) / `piers` (brightness profile along a given row to find pixel columns of evenly spaced structures; outputs a check image) |
+| `revimg.py` | Baidu image search + Yandex reverse image search; `--query` Chinese keyword search (Bing China, Baidu/Sogou Images) |
+| `geo.py` | Coordinate conversion, bearing and distance, camera geometry (`range --hfov a:b` distance range), `line` alignment line, `intersect` sight-line intersection, `frame` computes the frame and occlusion before excluding, `spacing` pixel columns of evenly spaced structures × known polyline → solve for camera position (optionally scored jointly with the skyline) |
+| `poi.py` | Place names, residential compound names, housing development names, shop names → candidate coordinates; `--region <cc>` picks the pack's sources (CN: 360 Maps + OSM Nominatim + Baidu suggestions), otherwise OSM; lists every same-name point |
+| `sun.py` | Sun position, shadow-length ratio, `locate` location band, `when` time, `street` street orientation, `facing` heading from lit faces, `dish` satellite dish |
+| `osm.py` | Overpass: find / near (co-occurrence) / crossings (line-to-point) / route (route corridor) / intersect (crossings of two kinds of lines; bends are only labeled, `--rank-near` ranks) / street-scan (street-view geometry template) / geom (export geometry) |
+| `tiles.py` | Satellite tile mosaic, `mark` plots points + overlays GeoJSON lines + field-of-view wedge, `sheet` numbered thumbnails of candidate points |
+| `baidu_pano.py` | Baidu panoramas: near / info / scan / render / sheet (`--headings` to look around from one point, `--road` `--spread`) / sample (street view sampling of candidate cities) |
+| `gsv.py` | Google Street View (outside China): near / render / sheet / `targets` (panoramas around each target point, rendered facing it, for `match.py --items`), no key, official coverage only |
+| `pose.py` | Solve camera position from multiple points: lat/lon, height, heading, pitch, roll, field of view + error radius + per-point check; `check` scores discrete candidate camera positions; `project` projects map points back onto the photo |
+| `terrain.py` | Elevation: view (synthesized mountain view; `--overlay` overlays the skyline on the photo, `--roll`) / profile (skyline) / elev / `ridge` reads ridgeline pixel points from the photo / `scan` filters a whole region along infrastructure lines for "flat nearby + mountain present" points and clusters them / `fit` batch skyline scoring of candidate camera positions (optional infrastructure-distance constraint; outputs overlays of the top N) |
+| `evidence.py` | Evidence image: satellite image + camera-position wedge + comparison panels |
+| `intake.py` | Steps 0–3 in one command: exif + edge crops + variants + OCR + Baidu/Yandex reverse image search in parallel; outputs intake.md (tiered vote count, possible place names) |
+| `ocr.py` | Reads text in the photo (Apple Vision, falls back to RapidOCR): full image + zoomed + tiles, merged; text read only after zooming is marked in `pass` |
+| `clues.py` | Lookup tables: country calling codes, driving side, overseas territories (`data/`); plates, area codes, admin hierarchy and other country tables from region packs (`--country`) |
+| `regions.py` | Region packs: `list`, `show <cc>` (lookups, services, tips, clue index with line numbers), `lint` (pack contract) |
+| `refresh.py` | Maintainers: re-fetch the global tables and the China pack's tables from their sources |
+| `board.py` | Candidate board: candidates, clues, evidence likelihood ratios, exclusions (require a computed file), ranking, scan cost, next step, pre-conclusion check, generates result.json fields |
+| `gazetteer.py` | Admin-division gazetteer: lists all subdivisions (with bbox), built-up area extents, scan pages |
+| `sat_scan.py` | CLIP zero-shot scoring and ranking of satellite grid cells/candidate points (sports fields, factory buildings, silos, dams…), top-N thumbnails + heatmap |
+| `match.py` | Ranks the photo against candidate ground-level images: DINOv2 global similarity + SIFT inlier re-ranking; candidates can be rendered on the fly from panorama ids |
+| `geo.py bearings` | Camera position → bearing, angular width and distance of each outline in a GeoJSON; use with `sun.py compass` to compute the bearing first, then identify the structure |
+
+## Coordinate systems (must be kept apart in China)
+
+| Code | Name | Who uses it |
+|---|---|---|
+| wgs | WGS84 | GPS, photo EXIF, Google satellite imagery, OpenStreetMap, elevation tiles |
+| gcj | GCJ-02 | Amap (Gaode), Tencent, 360 Maps, Google's China road maps, **Google Earth's Chinese label layer in China** |
+| bd | BD-09 | Baidu Maps lat/lon |
+| bdmc | Baidu Mercator | `@x,y` in Baidu Maps URLs, the Baidu panorama API |
+
+In China the same point differs by several hundred meters between WGS84 and GCJ-02. Conversion: `scripts/geo.py convert --from X --to Y a b`.
+- Amap links use gcj: `https://uri.amap.com/marker?position=<lon>,<lat>`; Google links use wgs.
+- **Google Earth in China: the imagery is WGS84, the Chinese place-name labels are GCJ-02, and the two are offset by several hundred meters** (v005: a dock's Chinese label landed on the river surface). Place points and read coordinates from the imagery.
+- For coordinates read from Chinese map apps or websites, confirm the coordinate system before using them.
+
+## Satellite imagery
+
+| Source | Notes |
+|---|---|
+| Google satellite tiles | `mt1.google.com/vt/lyrs=s`, WGS84, sharp in China. `tiles.py` default |
+| Esri World Imagery | Backup; older in some parts of China; has the Wayback historical archive |
+| Google Earth desktop | Historical imagery timeline, tilted 3D (manual use); 3D models in China are old, newly built supertall buildings are often missing |
+
+- The same place at different zoom levels may be imagery from different years and different tilt angles.
+- Zoom 17 is about 1.1 m/pixel, for areas; zoom 19 is about 0.28 m/pixel, for single buildings; zoom 7–9 as the base map for `sun.py locate --mosaic`.
+
+## Street view and ground-level imagery
+
+### Baidu panoramas (main source in China)
+
+The endpoints are all at `https://mapsv0.bdimg.com/`, need no key, and must be accessed directly:
+
+| Purpose | Parameters |
+|---|---|
+| Nearest panorama to a point | `?qt=qsdata&x=<bdmc x>&y=<bdmc y>` |
+| Panorama info (date, location, all points along the road, historical versions) | `?qt=sdata&sid=<panoid>` |
+| Render a perspective view by heading | `?qt=pr3d&panoid=<id>&heading=<compass angle>&pitch=<pitch>&fovy=<vertical FOV>&width=<≤1024>&height=<>` |
+
+- heading is a compass bearing, 0 = due north, clockwise; a width over 1024 returns 404.
+- Covers urban arterial roads and many roads inside industrial zones; almost nothing inside residential compounds. Captures are mostly from 2017–2019, so new buildings aren't visible.
+- Place search on map.baidu.com triggers a captcha; don't try to get around it; use `poi.py` for place names.
+
+### Other
+
+| Source | Use | Known issues |
+|---|---|---|
+| Google Street View | Street view outside China, with historical dates; `gsv.py` | Almost none in China; user-uploaded panoramas are filtered because perspective rendering fails. `targets` uses the undocumented z17 coverage layer (`/maps/photometa/ac/v1`); failures are reported and not cached. The layer is incomplete: empty coverage is not evidence against a target; check with `near` |
+| Mapillary, KartaView | Crowdsourced street view, rural roads outside China | Almost none in China |
+| Tencent Street View | Backup in China | API not yet investigated |
+| Map POI photos, hotel/scenic-area photos online, tourist photos | Compare skylines and building shapes when there's no street view | Shooting angle can't be controlled |
+
+## Search
+
+| Source | Good at | How to use |
+|---|---|---|
+| Baidu image search | Chinese web pages, Weibo, Baijiahao, e-commerce, scenic areas; gives "图中可能是…" ("the image may show…") | `revimg.py` |
+| Yandex Images | Buildings, street view, foreign content; gives tags and source sites | `revimg.py` |
+| Google Lens | Recognizing "what this is" (species, car models, statues, attractions), often stronger than Baidu and Yandex | Requests from a server's egress IP get challenged for verification; when you have a browser-control tool, use it in the user's browser; the AI Overview will confidently report a place name based on similar images |
+| Bing China, Baidu Images, Sogou Images | Chinese-keyword web and image search | `revimg.py --query`; Baidu web search pops up a verification challenge, not used |
+| Douyin, Xiaohongshu, Weibo | Influencer check-in spots, scenic areas' official accounts, same-city content | Web search or user assistance |
+| Development photo albums on real-estate sites (Anjuke, Fang.com, Loupan.com, etc.) | New housing developments, commercial complexes; albums include signboards | Web search the development name |
+| Travel review sites (Tripadvisor, Ctrip) | User photos of statues, parks, attractions | Web search |
+| Stock photo libraries (VCG, Getty, Alamy) | Captions carry exact place names and dates | Web search |
+| Local government and local media websites | Check the names and sizes of scenic areas, towers, statues | Web search |
+
+## Place name → coordinates (China)
+
+| Source | Notes |
+|---|---|
+| 360 Maps search `restapi.map.so.com/newapi` | No key; good coverage of residential compounds, housing developments, shops and organizations, with address and district; coordinates are GCJ-02 (`poi.py` already converts to WGS84); without a city it returns a list of cities nationwide that have same-name results |
+| OpenStreetMap Nominatim | Named residential compounds, parks, roads; WGS84 |
+| Baidu Maps search suggestions `map.baidu.com/su` | No key; only "city + district + name", no coordinates |
+| Baidu Maps place search, Tencent and Amap APIs | Baidu needs a captcha, Tencent and Amap need keys; not used |
+
+## Place name → coordinates (outside China)
+
+- `poi.py "<address or place name>" --sources osm --country <two-letter country code>` (Nominatim, WGS84). When a street address isn't found, drop the house number and search only the street + district name.
+
+## Ground photos (when there's no street view)
+
+| Source | Notes |
+|---|---|
+| Images from news, encyclopedias, company websites, blogs | First find a name for the facility (OSM name, nearby place name + the local-language word for the facility type), then search; rural factory buildings and abandoned facilities often have only this kind of ground photo |
+| Wikimedia Commons search by coordinates | `commons.wikimedia.org/w/api.php?action=query&list=geosearch&gscoord=<lat>|<lon>&gsradius=10000&gsnamespace=6&format=json`, no key; remote areas often have only a few |
+| Mapillary | Wide coverage, but the API needs an OAuth token; the scripts don't use it |
+| KartaView | API needs no key; very little coverage |
+
+## Thematic maps and structured data
+
+| Source | Use | Known issues |
+|---|---|---|
+| OpenStreetMap Overpass | Feature co-occurrence, line-to-point, route corridors, line crossings, street-view templates, points along a road, large buildings | `osm.py`; public servers are often busy or rate-limited (the script retries on mirrors; a result with a remark gets a warning that it may be incomplete); **ranges of hundreds of kilometers with a name regex (`[~"name"~...]`) often time out**; drop the regex or query by sub-area; in Chinese counties and townships, buildings and parking are basically empty, and rivers often have only centerlines |
+| OpenRailwayMap (openrailwaymap.org) | Railway class, single/double track, electrification, stations | Viewed manually on the web; same data as OSM |
+| OpenInfraMap (openinframap.org) | Power lines and voltage, substations | Viewed manually on the web; voltage may be untagged |
+| AWS Terrain Tiles (Terrarium) | Global elevation, about 30 m | `terrain.py`; details smaller than a hundred meters are unreliable |
+| City open data | Street trees (species, trunk diameter at breast height, location), etc. | Many foreign cities, few Chinese ones |
+
+## Time and weather
+
+| Source | Use |
+|---|---|
+| `sun.py` (NOAA algorithm, within ≤0.02° of NREL SPA) | Sun position; replaces SunCalc |
+| Historical daily weather (temperature, sun/rain) | Check "frozen", "sunny"; with a date, exclude overcast or rainy areas |
+| Historical weather-satellite cloud imagery | Exclude large cloud areas on that day (clearly effective only with typhoons and fronts) |
+| Flightradar24, FlightAware | Flight history by registration; the paid tier can download KML/CSV tracks |
+
+
+---
+
+<a id="source-7121cf7f0b82b302"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/geometry.md
+
+# Camera geometry: recovering bearing, distance and height from the frame
+
+Scripts: `scripts/geo.py` (`range` / `bearing` / `dest` / `fov` / `line` / `intersect` / `frame`), `scripts/pose.py` (solving the camera position from multiple points, scoring candidate camera positions), `scripts/terrain.py` (skyline rendering).
+All results are estimates. When you write a conclusion, write out the assumptions you used (lens zoom, object size) with it.
+
+## 1. Determine the field of view first
+
+The main camera (35mm-equivalent about 24–26mm) is the most common phone lens, but **without EXIF, never lock the focal to it**. Distant mountains, compressed layers and a far object filling the frame are often shot at 2–3x or more. Any search that solves for focal must cover ultra-wide to telephoto (`terrain.py fit` does 13–135mm by default when the focal is assumed); a main-camera-only search simply cannot reach a 52mm photo, and its best fit lands somewhere wrong.
+
+| Equivalent focal length | 4:3 long-side FOV | 4:3 short-side FOV |
+|---|---|---|
+| 13mm (0.5x ultra-wide) | ≈107° | ≈88° |
+| 24mm | ≈71° | ≈57° |
+| 26mm (common 1x) | ≈67° | ≈53° |
+| 48–52mm (2x) | ≈38° | ≈29° |
+| 77mm (3x) | ≈26° | ≈19° |
+
+- In portrait orientation, the photo width corresponds to the short-side FOV; in landscape, to the long-side FOV.
+- Judging zoom: obvious stretching at the frame edges, nearby objects very large → ultra-wide; small size difference between near and far, background looks "pressed in" → telephoto. Use this to choose where to look first, not to narrow the search range.
+- Screenshots and cropped photos have a smaller FOV; use a conservative range.
+
+**Video screenshots are narrower**: phone video is 16:9; the frame width of a vertical video corresponds to the short side of 16:9, and stabilization crops off another margin.
+
+| Zoom | Landscape video horizontal FOV | Vertical video horizontal FOV |
+|---|---|---|
+| 0.5x | ≈95–106° | ≈65–73° |
+| 1x | ≈58–67° | ≈35–41° |
+| 2x | ≈32–37° | ≈18–21° |
+| 3x | ≈22–25° | ≈12–14° |
+| 5x | ≈14–16° | ≈8–9° |
+
+When you can't tell the zoom, don't guess a single value: `geo.py range --real <object size> --pixels <pixels> --image-width <width> --hfov 8:70` gives the whole distance range; search for candidates over that range. Then use section 11 to check whether "landmark X is not in the frame" can exclude anything.
+The zoom can be backed out: identify two or more landmarks with known positions; the angle spanned by their horizontal pixel spacing in the frame can be computed from the candidate camera position; comparing the two gives the focal length (with 4 or more points, use `pose.py` from section 10 directly, with hfov not fixed).
+
+Focal length (pixels): `f = (image width in px / 2) / tan(FOV / 2)`
+
+## 2. Find the horizon
+
+**When shooting down from a tall building, shooting up, or holding the phone tilted, the horizon is not at the middle of the frame** (one calculation using that default got the ridge height difference wrong by 2–3×). In that case:
+- Estimate pitch from the convergence of vertical building edges: edges converging downward = shooting down, converging upward = shooting up; asymmetric tilt of the left and right building edges = roll.
+- When you can identify ≥4 points with known positions, use `pose.py` from section 10 to solve pitch, roll and height together.
+
+When the phone is held level, the horizon is at the vertical middle of the frame. To verify:
+- Vertical building edges are basically parallel, with no obvious upward convergence → phone is level
+- The row on which a distant object at the photographer's height lands (e.g., the roof of a distant building a few floors high, when the photographer is also a few floors up) is the horizon
+
+## 3. Estimate distance from a known size
+
+`distance ≈ real size × f / size in pixels`
+
+Common reference sizes:
+
+| Object | Size |
+|---|---|
+| Residential floor height | 2.9–3.0 m |
+| Office/factory floor height | 3.3–4.5 m |
+| Car width / length | 1.8 m / 4.7 m; MPV length about 5 m |
+| Urban lane width | 3.5 m |
+| Standard parking space | 2.5 × 5.3 m |
+| Balcony railing baluster spacing | about 0.11 m |
+| Chinese high-speed and intercity rail simply supported box girder span (pier spacing) | mostly 32 m, also 24 m and 40 m; when you can count the piers, a row of piers is a ruler |
+| Supertall tower width | look it up; if you can't find it, measure the roof on satellite imagery |
+
+Estimate the same object two ways (e.g., building width and floor height). A large gap means the zoom or size assumption is wrong.
+
+## 4. Recover the shooting direction from two landmarks (most useful)
+
+Conditions: the positions of two landmarks are known (measured on satellite imagery), and in the photo you can tell which is nearer/farther and which is left/right.
+
+1. On satellite imagery, determine the direction of the line connecting the two landmarks.
+2. For objects of equal height, the one whose top sits lower in the frame is farther. With a known width, use section 3 to compute each distance.
+3. Only a few directions satisfy "near one on the left, far one on the right": looking obliquely from one side of the connecting line.
+   Example: two towers lie east–west, near tower on the left, far tower on the right → the photographer is west-southwest or east-northeast;
+   from due south/north the two towers are equally far; from the southeast/northwest the left/right near/far relation reverses.
+4. The horizontal angle between the two towers in the frame, combined with their actual spacing, further gives the angle between the sight line and the connecting line.
+5. Usually two candidate directions remain; use satellite imagery to see which side's building layout looks like the photo, and exclude the other.
+
+## 5. Road direction
+
+- Find the street's vanishing point (the intersection of the extended eave lines of buildings on both sides and the road edges).
+- Horizontal pixel difference between a landmark and the vanishing point in the frame → angle: `angle = atan((x_landmark − x_center) / f) − atan((x_vanishing − x_center) / f)`
+- Road bearing = landmark bearing − angle. Look for a road with this direction on satellite imagery.
+
+## 6. Camera height
+
+- A certain floor of a building in the frame lies on the horizon → the photographer is at the same height as that floor.
+- Or: the ratio of the pixel distances from an object's top edge and bottom edge to the horizon = part above the photographer : part below the photographer.
+  Example: a glass curtain wall's top edge is 283 px above the horizon and its bottom edge 157 px below; the wall spans 4–20 m above ground → the photographer is about 10 m above ground.
+- Looking down at nearby objects on the ground: `depression angle = atan(pixel distance to the center line / f)`; with a known horizontal distance you can get the height.
+- Cross-check with at least two references and give a floor range (e.g., "floors 3–6"), not a single number.
+
+## 7. Sight-line geometry: fixing the camera position without focal length or sizes
+
+This section is the main way humans beat the AI in the videos (v006, v010-1/2/3/7). Do it after identifying an anchor and before street view comparison.
+
+### 7.1 Alignment line (extend the line through two points)
+
+When a near object and a far object in the frame are vertically aligned or one hides the other (a spire right above a house, a court's diagonal pointing straight at the lens), the camera position is on the extension of the line "far object → near object", beyond the near object.
+
+```bash
+uv run scripts/geo.py line --near <near object lat,lon> --far <far object lat,lon> --range 50:2000 --step 100 --out line.json
+uv run scripts/tiles.py mark area.jpg --points line.json --out area_line.jpg
+```
+
+Then cut the camera position out of the line with a third constraint: riverbank, road, a tall-enough building, camera height.
+
+### 7.2 Sight-line intersection (two lines fix a point)
+
+```bash
+uv run scripts/geo.py intersect --align1 <near1>:<far1> --align2 <near2>:<far2> --sigma 1
+uv run scripts/geo.py intersect --sight1 <landmark lat,lon>@<bearing to it from the camera position> --sight2 ... --sigma 2
+```
+
+- Outputs the intersection, the angle between the two lines, and the error radius (the maximum distance the intersection moves when each line's bearing is off by ±sigma).
+- When the angle is <15°, the intersection is extremely sensitive to error; find another line at a large angle.
+- The error radius is the radius to write in the conclusion; don't make up decimal places.
+
+### 7.3 Tangent line
+
+A ridge or cliff edge is exactly tangent in the frame to the edge of a nearby feature (field edge, riverbank line, eave) → draw the same tangent line on satellite imagery; the camera position is on that line (v010-2).
+
+### 7.4 A skyline gives only one sight line
+
+Moving the camera position a few hundred meters forward or back along the sight line barely changes the outline of a distant ridge. So "the mountain shape matches" only says the camera position is near some sight line; **it can't fix a point, much less give meter-level precision** (v010-1: the AI reported ±7 m from the mountain outline alone and landed in the wrong town).
+
+```bash
+uv run scripts/terrain.py view --at <candidate camera position> --heading <heading> --hfov 60 --range 25000 --out v.png --photo photo.jpg
+```
+
+Use it to screen candidate camera positions and fix the sight-line bearing; to fix a point, add another independent constraint (another near–far alignment, a road or riverbank, camera height).
+When rendering, the FOV must match the photo: portrait phone main camera horizontal FOV about 50°, landscape about 65°; for telephoto shrink it by the zoom (2x roughly halves it).
+
+- `--overlay` outputs an extra image that draws the synthetic skyline directly on the photo by pinhole projection; easier to match than stacking them top and bottom. When it doesn't match, adjust `--heading / --pitch / --hfov / --roll` first, before doubting the camera position. `--pitch` is positive looking up: horizon below the photo's middle → positive, above → negative.
+- When spiky false ridges appear close by (elevation sampling artifacts), set `--near` to 150–300 m.
+- When the ridges around a city are gentle, the skyline only helps you fix heading and FOV; it can't separate camera positions within a few hundred meters.
+
+**When there are many candidate camera positions, score them in batch, then look at overlays of the top few** (single source; one real case). Two steps: first `terrain.py ridge` reads the photo's ridge into a sequence of pixel points, then `terrain.py fit` places grids of camera positions around the candidate points and searches heading × focal length × horizon row.
+
+```bash
+# 1) Read the photo ridge: per column, find the brightness drop from sky to mountain
+uv run ${CLAUDE_SKILL_DIR}/scripts/terrain.py ridge photo.jpg [--x0 X0 --x1 X1 | --points "x,y;x,y;..."] --out ridge.json \
+  [--step 20] [--flat x0:x1] [--hrow ROW] [--f0 px] [--f35 26.0] [--ymin 0] [--ymax IMAGE_HEIGHT] \
+  [--near "x,y;x,y;..."] [--near-clear x0:x1@ROW ...] \
+  [--drop 30] [--k 4] [--hold 12] [--halfw 1] [--png check.png]
+
+# 2) Batch scoring (fine search = the same command with --radius 800 --grid 100 --zoom 13 --az-step 0.25 --nsamp 400)
+uv run ${CLAUDE_SKILL_DIR}/scripts/terrain.py fit (--hits hits.json | --at lat,lon) --ridge ridge.json --out fit.json \
+  [--select 11,87,...] [--radius 2000] [--grid 250] [--zoom 11] [--focal-scales auto | --f35-range LO:HI] [--az-step 0.5] \
+  [--near 150] [--range 15000] [--nsamp 260] [--eye 1.6] [--cam-flat 8] [--cam-flat-radius 300] \
+  [--min-peak 6] [--cc-max 0.7] [--roll-max 1.0] [--flat-clear 1.0] [--flat-w 1.5] [--flat-step 20] \
+  [--line lines.geojson --line-dist L0-L1:C0-C1:R0-R1 [--line-win -27:-21,-3:3,18:27] [--line-scale 200,200,300] \
+   [--line-order none|asc|desc] [--line-w 0.3] [--line-min 150] [--line-sample 50] [--line-reach 3000] [--skip-tag electrified=no ...]] \
+  [--near-dist 3000,5000,8000,12000] [--near-clear-w 1.5] [--perp-line lines.geojson [--perp-tol 35] [--perp-reach 1500]] \
+  [--top 20] [--keep 5000] [--sheet top.jpg] [--overlay|--photo photo.jpg] [--sheet-cols 4] [--sheet-width 360]
+```
+
+- `ridge`: `--x0/--x1` is the column range of the ridge, `--step` the spacing between sampled points, `--flat x0:x1` the column range of the flat horizon (the stretch with no mountains), `--hrow` the horizon row (if omitted, estimated from the middle of the frame). `--drop/--k/--hold/--halfw` are the thresholds for finding the brightness drop (drop size, multiple, consecutive rows, horizontal smoothing half-width). Outputs `{size, ridge:[[x,y]...], flat:[x0,x1], hrow, f0, f0_source}`; when the photo has no EXIF focal length, `f0` is estimated from the `--f35` equivalent focal length and the image dimensions and marked `f0_source=assumed`. `--png` outputs a check image. `--points` replaces detection with hand-picked skyline points: use it when cloud sits on the peaks or snow meets a pale sky, because detection then follows the cloud edge and the residual never comes down.
+- `fit`: candidates come from `--hits` (the scan results of `corridors.md` 4.3; `--select` takes only the given cluster numbers) or a single point via `--at`. Around each candidate point, camera positions are placed on a `--grid`-meter grid within `--radius` meters; heading is scanned in `--az-step` steps, focal length is tried at the `--focal-scales` multipliers, and the horizon row is searched too — **don't hard-code "portrait 50°, horizon at the middle"**. The camera position itself must be flat close by (relief of at most `--cam-flat` m within `--cam-flat-radius` m), and the mountains must be high enough (`--min-peak`). Score = ridge elevation-angle RMS + a penalty for the flat-horizon stretch being blocked by mountains (`--flat-clear` tolerance, `--flat-w` weight). `rms_px` in the output is the RMS converted to pixels; compare it with the point-picking error of the photo ridge: when the top few all have `rms_px` about as large as the picking error (a few to a dozen or so pixels), the skyline can't separate these camera positions and you need a second constraint. Focal search is automatic (`--focal-scales auto`): ×0.9/1/1.12 around an EXIF or `--f0` focal (pass `--focal-scales 1` to pin it), a 13–135mm-equivalent ladder (~18% steps) when ridge.json's focal is assumed. On the ladder, scores are compared in pixels (`--focal-metric auto`): in degrees the same pixel mismatch shrinks as the focal grows, and on a real photo every candidate ran to the longest rung. `f35` in each record is the equivalent focal in mm.
+- **A focal on the edge of the range is a signal, not noise.** When the leading results sit on one end of the ladder, fit prints a WARNING and writes `focal_edge`. Most often the photo is more zoomed (or wider) than the range: rerun with `--f35-range` extended past that end (the warning suggests one) before trusting the ranking, heading or focal. A search that keeps everything on the long end is telling you the photo was zoomed; ignoring that and ranking anyway sends you to a place where a shorter lens happens to fit. In the real case: with a 20–40mm range all 10 leading results sat on the long end and the true area ranked 97th; with 13–135mm the edge cleared, the focal settled inside the range and the true area ranked 1st of about 1,800. Only when the focal runs to the new end again, or the focal is known from EXIF and still hits ×0.9/×1.12, is it absorbing another error: check cloud on the ridge points (`ridge --png`), `hrow`, and whether the place is wrong.
+- **Distant ranges**: the default `--range 15000` only sees terrain within 15 km. For a range 20–40 km away use `--range 45000`; z10 flattens peaks, so lower `--min-peak` to about half the photo estimate (corridors.md 4.3).
+- **Two-layer photos** (a lower near range in front of a higher far range, and the near range ends mid-frame so the far range's foot or plain shows beyond it). `fit` on the outermost skyline alone can match the far outline at a wrong heading with a wrong focal; in one real case the far-only fit at the true camera position chose a heading 50° off and a near-maximal focal, while the two-layer fit got the heading within 0.5°. In `ridge`, add `--near` (points on the near range's top edge, where it stands in front of the far range) and `--near-clear x0:x1@ROW` (columns past the near range's end, where nothing near may rise above ROW, usually the far range's foot). `fit` then computes a near layer = highest terrain within D1 m (D1 tried from `--near-dist`), scores the near points with the far ones (one `cc` and roll for both), and adds `--near-clear-w` × `nclearpen`. The record gains `D1` (how far the near range reaches) and `rms_near_px`; the sheet draws the near layer in orange. Pick near points by hand and check them on `ridge --png`: the near/far boundary is where detection fails.
+- **Wires crossing the frame almost level** (high-voltage lines overhead): `--perp-line lines.geojson` keeps only headings within `--perp-tol` (default 35°) of perpendicular to the nearest line; camera positions more than `--perp-reach` m from any line are skipped. In the real case this, plus the near layer, was what separated the right region from look-alike ranges elsewhere.
+- **Solve roll too** (`--roll-max`, default 1.0°; 0 gives the old behavior): a 1° handheld tilt makes the ridge at the two ends of the frame differ by a dozen or so pixels; if roll isn't solved, the ground truth gets crowded into the same RMS tier as a pile of wrong candidates. For each heading, a least-squares fit of "terrain elevation angle − photo elevation angle" against horizontal azimuth gives the horizon offset `cc` as the intercept and tan(roll) as the slope; the result is written into the camera-position record's `roll`. Keep the cap tight: in both synthetic tests and real photos ±1° works better than ±2.5° (when loosened, wrong candidates can also absorb noise through tilt, and the gap between the ground truth and second place is flattened). A solved `roll` that hits the cap means this degree of freedom is compensating for other errors (wrong camera position, wrong focal length); don't treat it as real tilt in the shot.
+- The facility-distance constraint is optional: `--line` gives the line data, `--line-dist` gives distance ranges (meters) at three places, left/center/right, `--line-win` the frame bearing windows for those three places (degrees, relative to heading), and `--line-order` requires the three distances to be monotonic (asc/desc). Falling outside a window is penalized by `--line-scale` and `--line-w`.
+- Output `fit.json`: `{params, n_clusters, n_cams, n_skipped:{not_flat, no_peak, no_line, dup}, clusters:[{hit, name, hit_ll, n, max_ang, n_cams, rank, best}...], cams:[{hit, name, hit_ll, cam:[lat,lon], d, brg, g, H, fs, f, cc, roll, rms, rms_px, flatpen, score, (dL/dC/dR/line_pen), total}...]}`; `--sheet` outputs thumbnails of the top N; with `--photo` they are the photo overlaid with the synthetic skyline (the red line is drawn with the `roll` solved for that camera position; otherwise the two ends would be off by a dozen or so pixels).
+- `ridge` / `fit` both use `terrain.py`'s `--cache` parameter (default `.geo-cache/dem`).
+- When spiky false ridges appear close by (elevation sampling artifacts), set `--near` to 150–300 m.
+- **Fine search (z13) is not guaranteed to be more accurate than coarse search**: in reruns, fine search on the same chain ended up farther from the ground truth than coarse search. The z13 flatness filter removes points near the ground truth, and the skyline itself gives only one sight line. Fine search exists to give 7.7's evenly spaced structures a reliable `--center`, not to push the error down by itself.
+- `H` and `f` in the `fit` output have a systematic bias that comes from `hrow` in `ridge.json`: in the same coarse search, hrow set by hand to 935 gave H 80.5 / f 1436, while the auto-estimated 909 gave H 79.0 / f 1282. Cluster ranking is unaffected (the ground-truth cluster ranked 1st both times); if you want to make claims from heading and focal length, first pin down the blue line on `ridge --png`.
+- **Skyline alone can't separate them**: in a real case with 171 candidates the ground truth ranked 2nd, but the top 20 all had RMS crowded into 0.10–0.20°. Rank together with a second numeric constraint (e.g., how far the facility is from the left, center and right of the frame, `corridors.md` 4.3).
+- The stretch of ridge hidden by the foreground (people, cars, trees, nearby objects) doesn't enter the score, yet where the mountain foot starts to rise is often what best separates candidates. **Always `--overlay` the top 3–5 and look**: in a real case, the candidate ranked 1st overall had its ridge bulge in the occluded stretch and its mountain foot didn't match; the 2nd was the ground truth.
+
+### 7.6 A nearby cable close to vertical in the frame
+
+If a cable, wire or stay very close to the lens looks almost vertical in the frame, the camera position is near the vertical plane of that line (looking from directly below or straight from the side).
+The bearing difference Δ (degrees) by which the line departs from vertical and spans horizontally in the frame, and the distance s from the line to the camera position, satisfy: lateral offset d ≈ s · tan(Δ). Get the line's position with `osm.py find '["aerialway"]'` or `'["power"="line"]'`.
+In a blind test, this alone once brought the lateral error down to a dozen or so meters.
+
+### 7.5 Verify bearings with a top-down sketch
+
+Draw "camera position → foreground → midground → background → sun" as a top-down sketch with bearings; the candidate point must reproduce the same left/right, near/far and heading on the map. Rules in `verify.md` section 3. A sunset only says the lens faces west, not that the coast faces west (v010-7).
+
+### 7.7 Evenly spaced structures: distance to the line and oblique angle
+
+When a row of evenly spaced things in the frame (viaduct piers, utility poles, streetlights, guardrail posts) lies on a line known on the map, you can solve for how far the camera position is from that line and at how many degrees it looks across it obliquely. Single source (one real case).
+
+1. `imgprep.py piers` reads the pixel column of each structure (it takes a brightness profile along the rows where the structures are and finds peaks); ≥6 of them, and it's fine if the foreground breaks them into several segments.
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/imgprep.py piers <image> --rows R0:R1 --out cols.json \
+  [--cols X0:X1] [--min-gap 20] [--min-prominence 12] [--baseline 61] [--polarity auto|bright|dark] [--sheet piers.jpg]
+```
+
+`--rows` is the row range for the profile (the rows the structures are in), `--cols` limits the column range, `--min-gap` is the minimum spacing in pixels between adjacent peaks, `--min-prominence` the minimum peak prominence, `--baseline` the sliding-window width (odd) used to estimate the background, and `--polarity` says whether the structures are brighter or darker than the background. Outputs `{image, size, rows:[r0,r1], cols:[x0,x1] (the column search range, not the structure columns), polarity, params, count, piers:[{col, prominence, dev, level}...]}`; the structure columns are in `piers`, and `geo.py spacing --cols @cols.json` reads that field directly. **You must eyeball the check image from `--sheet`**: bright patches of grass and the edges of foreground pipes produce false peaks; delete them before the next step.
+
+2. `geo.py spacing`: for each candidate camera position, heading and focal length, convert the pixel columns into bearing rays and intersect them with the OSM polyline to get each structure's along-line distance; at the correct camera position the differences between adjacent along-line distances are constant and equal the standard spacing.
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/geo.py spacing --cols '39,133,219,296,369;745,788,...,1148' \
+  --line rail.geojson [--line-name <line name>] [--line-index 0] --span 32 --center lat,lon \
+  [--radius 1500] [--grid 50] [--headings 0:360] [--heading-step 0.25] \
+  --focals 1200,1281,1350,1430,1500|1200:1500[:step] [--focal-step 50] [--cx 640] \
+  [--min-dist 100] [--pier-max 0.08] [--mono-penalty 1.0] [--top 25] [--progress 10] [--out spacing.json] \
+  [--ridge ridge.json] [--hrow 935] [--flat 0:280] [--flat-step 20] [--flat-margin 1.0] [--flat-weight 1.5] \
+  [--ridge-weight/--pier-weight 2.0] [--cc-max 0.8] [--eye 1.6] [--dem-zoom 13] [--dem-range 18000] \
+  [--sky-range 16000] [--sky-near 100] [--sky-samples 400] [--az-step 0.1] [--cache .geo-cache/dem]
+```
+
+- `--cols` are pixel columns; when the foreground breaks them into segments, group them with `;` (adjacent along-line differences are compared only within a group); at least 3. `--cx` is the center column of the frame.
+- When `--line` contains several lines, pick one with `--line-name` or `--line-index` (a name that doesn't exist lists the available names). `--span` is the standard spacing (meters).
+- Camera positions are searched on a `--grid`-meter grid within `--radius` meters of `--center`; heading is scanned by `--headings a:b` + `--heading-step`, and focal length is tried from the `--focals` list or `low:high[:step]`. Score = spacing dispersion (CV) + |log(mean spacing / standard spacing)|; `--pier-max` is the cutoff for inclusion, and `--mono-penalty` penalizes solutions whose along-line distances aren't monotonic.
+- Passing `--ridge` scores jointly with the 7.4 skyline (DEM fetched per `--dem-zoom`/`--dem-range`, weight `--ridge-weight`, flat-horizon stretch via `--flat*`). Outputs `{line, params, n_fit, best, candidates:[{tot, rms, pier, cam:[lat,lon], f, H, cc, span_m, d_first, d_last}...]}`.
+- With this alone, the solution is a band along the line (spread over about 800 m in a real case); scoring jointly with the skyline narrows it to about 300 m. Suited to fixing the camera position at the end, not to choosing a city.
+- The standard spacing is an assumption: a solved mean spacing equal to the standard value is forced by the scoring and doesn't count as verification; the real signal is low dispersion (CV 2–7% in a real case). When unsure of the spacing, run once with each of a few standard values.
+
+## 8. Estimate object height
+
+Back-computing the time from the sun and estimating distance by proportion both need object height. Cross-check with at least two rulers:
+
+| Ruler | Size |
+|---|---|
+| Adult | about 1.7 m (posture and shoes add a few cm of error) |
+| Interior door / entrance door | about 2.0–2.1 m |
+| Residential floor height | 2.9–3.0 m; commercial buildings 4–5 m; factories 3.3–4.5 m |
+| Standard shipping container | 2.59 m; high cube 2.90 m |
+| Mounting height of traffic signs and signals | look up that country's standard; don't guess |
+
+When you have the building name, look up its floor count and floor height directly; that is more reliable than estimating from pedestrian proportions.
+
+## 9. Screen buildings by camera height
+
+- Can look down on the roofs of surrounding 20–30-story residential towers → the camera position is in the city's tallest tier of buildings, often only a few candidates; not seeing the city's tallest building in the frame may be precisely because the photographer is standing on it (v006).
+- In a tourist's photo, a steady elevated downward shot from a building is most likely from their hotel (v011): within the candidate area, look first at hotels with parking lots.
+- Estimate the floor by cross-checking two references (section 6); give a range.
+
+## 10. Solving the camera position from multiple points (pose.py)
+
+Window views, downward shots from tall buildings, views across a river: as long as you can identify ≥4 points on satellite imagery (bridgeheads, spires, building corners, intersections, sports-field corners), you can solve the camera position's lat/lon, height, heading, pitch, roll and FOV in one go. It uses height information that a two-sight-line intersection doesn't, and can compute the floor directly.
+
+```bash
+# spec.json: {"frame":"upright", "image_size":[W,H], "points":[{"name":…,"px":[x,y],"ll":[lat,lon],"h":<elevation ASL>}...],
+#             "init":{"at":[lat,lon],"height":<elevation ASL>,"heading":…,"pitch":…,"hfov":65}, "fix":["hfov"]}
+uv run scripts/pose.py solve spec.json --photo photo.jpg --out pose_check.jpg --search-radius 500
+uv run scripts/pose.py project --pose pose.json --points river_bank.json --photo photo.jpg --out bank_check.jpg
+```
+
+- In this template, `image_size` and `px` use the whole photo after EXIF orientation is applied, matching `imgprep.py` and `ocr.py`. Old specs without `frame` retain the stored-pixel frame when solved again; the saved pose carries the frame through to `project`.
+- The heights of the points and of the camera position must use the same datum; always use elevation above sea level: ground points via `terrain.py elev`, rooftop = ground elevation + building height.
+- Spread the points across different directions and distances in the frame; if they all lie on one line the solution is unstable (the script warns).
+- Check `rms_px` in the output (reprojection error; >15 px means a point is misidentified or the height datums are inconsistent) and `radius_m` (95% error radius; use it directly as the radius in the conclusion).
+- **`--pt-sigma` must be set to match reality** (default 5 m): how many meters of error the control points you clicked on satellite imagery carry. Sharp-edged ones like building corners and bridgeheads 3–5 m; a tower in a cluster of trees or a round building whose center you can only estimate 10–15 m. Control-point coordinate error doesn't propagate into the reprojection residual (if all points shift the same way, the camera shifts with them and the residual stays the same), so it can only be propagated by the `--pt-sigma` Monte Carlo; you can't see it from rms alone. Set it too small and the reported radius is too small: in synthetic tests with a true 15 m but 5 m entered, coverage dropped from 95% to 53%.
+- `radius_px_only_m` in the output is the old measure (3σ of pixel noise only), kept for comparison; **don't use it as the conclusion's radius**: with coordinate noise ≥5 m it covers the ground truth only about 70% of the time.
+- After solving, use `project` to project riverbanks, roads and building corners back onto the photo and check them item by item; this is an independent second verification step.
+- Check on synthetic data: 8 points, 1.5 px noise, position error about 30 m (600 m height, points several km away); heading and pitch error <0.1°.
+- **Works for level shots too**: standing on the ground shooting distant towers, bridges or piers, add `height` to `fix` and give the eye height as `init.height` (same datum as the points). Accuracy depends on how widely the points spread in bearing: in synthetic tests (4 px pixel noise, 5–15 m coordinate noise) with the points all crowded within 10°, the median error is about 50 m and bad ones reach 200 m; spread to 40°, about 25 m. When they're crowded, report the conclusion's radius from `radius_m`; don't shrink it because "it matches".
+- **The main source of error is misidentified points, not the solver**: one misidentified point (wrong feature, a courtyard outline taken as a building corner, a tower of the same kind on the map that isn't the one in the frame) can pull the camera position off by tens of meters to over a hundred. `leave_one_out` in the `solve` output re-solves with each point removed in turn: `pred_err_px` is how far off this point is when predicted from the other points; `suspect` flags one only when "the remaining points fit clearly better without it" (the threshold is conservative; synthetic tests: downward shots with 7 points, false alarms about 1/20, detection about 12/20; level shots with 6 points unstable, detection 6–17/20; not possible when there is no redundancy after removing a point); `most_improved` lists "which point's removal improves things most" whether or not it passes the threshold — in a real case the mislabeled point was right there but didn't pass the threshold. Nothing flagged doesn't mean no point is misidentified.
+
+When several candidate camera positions all make sense and you need to pick one (a viewing platform marked on the map vs another stretch of shore on satellite imagery, several buildings on the same alignment line), use `check`:
+
+```bash
+# cands.json: {"candA": [lat, lon], "candB": [lat, lon, <eye elevation ASL>]}; without a height, init.height is used
+uv run scripts/pose.py check spec.json --cands cands.json
+```
+
+- Each candidate camera position is held fixed; only heading, pitch, roll (and the focal length if not fixed) are solved, and reprojection errors are compared; then it re-scores with each point removed in turn, and `robust_delta_chi2` takes the minimum over all removals. **Only `robust_delta_chi2` > 9 counts as not matching the photo**, and then it can be the file for `board.py exclude --computed`; looking only at `delta_chi2` over all points can be flipped by one misidentified point (synthetic tests: with one misidentified point mixed in, the ground truth ranked first dropped from 15/15 to 1/15).
+- Measured on synthetic tests (90 runs, including ones with a misidentified point mixed in): the true camera position was never robustly judged a mismatch; with all points correct, decoys 120 m away were excluded 10–15/15, and 60 m away 6–8/15.
+- **It is for removing clear mismatches, not for picking out the ground truth**: in 160 synthetic tests it wrongly eliminated the ground truth only once (excluding by `solve`'s camera position + radius would wrongly eliminate it 35 times, so exclude with `check`, not with the radius); but in scenarios where `solve` itself breaks down (points all crowded within 10–12°, coarse point marking), it ranks the ground truth first only about half the time. Ranking first isn't final; still go back to street view/satellite imagery and check invariant features.
+- One more thing: few points isn't fatal (4 well-spread points still solve to a dozen or so meters); **what's fatal is all the points crowded in one bearing** — better to use fewer points and look for them on both sides.
+- When two candidates differ only on one point (`robust_by` is the same "drop X"), the geometry can't separate them; first go back and check X. If they still can't be separated, rely on the scene (is the foreground an open lawn, can you see water), and state in the conclusion that the scene decided it.
+
+## 11. Compute the view before excluding: out of frame, occluded or too small ≠ absent
+
+Before you use "X is not in the frame" to exclude a camera position or a whole direction, you must compute it first. Common mistakes: a landmark sits right at the frame edge, so you assume "that famous building next to it would be visible if it were there"; imagining how wide a video screenshot's frame is using the main camera's FOV; a distant tower is only a few pixels, and you say "not seen".
+
+```bash
+# Identified landmark A is at x=1000 in the frame (width 1080), FOV unknown; check whether B and C should appear from the candidate camera position
+uv run scripts/geo.py frame --at <camera position lat,lon> --anchor A:<lat,lon>:px=1000:h=<height>:w=<width> \
+    --width 1080 --hfov 8:70 --pt B:<lat,lon>:h=<height>:w=<width> --pt C:<lat,lon>:h=<height>:w=<width> --cam-h <camera height>
+# Place candidate camera positions in rings around A (radius 1–13 km, every 15°) and compute in one go which directions "no B" can exclude
+uv run scripts/geo.py frame --ring <A's lat,lon>:1000:13000:1000:15 --anchor A:<lat,lon>:px=1000:h=<height>:w=<width> \
+    --width 1080 --hfov 8:70 --pt B:... --out ring.json
+uv run scripts/tiles.py mark area.jpg --points ring_keep.json --geojson ... --out ring_keep.jpg
+```
+
+- `--anchor` makes the heading change with the FOV: the narrower the FOV, the narrower the frame, and the more easily landmarks next to A fall out of frame.
+- Each landmark gets a verdict: "in frame over the whole field-of-view range" / "in frame at field of view a–b°, out of frame otherwise" / "not in frame over the whole field-of-view range"; plus "may be blocked" (the height and width of a nearer landmark can block a farther one) and "may not be visible" when it is too small (`--min-px`, default 12 px).
+- **Only a landmark that is "in frame over the whole field-of-view range, large enough and not blocked" can exclude this camera position by its absence**. Nearby buildings the script doesn't know about also occlude; a direction with tall buildings in the foreground still can't be excluded.
+- Look up the landmarks' h and w or measure them on satellite imagery; h and `--cam-h` use the same datum.
+
+## Common sources of error
+
+- Computing a 2x or 3x photo as 1x underestimates distance by half to two-thirds.
+- On satellite imagery the roof of a tall building is offset from its base, so you measure the wrong point.
+- When shooting through window glass, reflections and window frames are easily taken as scene content.
+- Declaring building level with only one alignment line (v006); reporting meter-level precision from the skyline outline alone (v010-1).
+- Treating "out of frame", "hidden by a nearby building" or "so far away it's only a few pixels" as "not there", and excluding the correct direction (section 11).
+- Computing video screenshots with the FOV of a phone photo: vertical video at 1x is only about 40°; add zoom and distances can be off several-fold.
+- In SunCalc-style tools, pinning the shadow tip at the base of the wall when what actually casts it is the eave or canopy edge; a few meters off shifts the time by several minutes (v007).
+
+
+---
+
+<a id="source-3ab68ab8cf2b5ff7"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/observe.md
+
+# Image-reading checklist
+
+Used in step 1. Don't guess a location until the checklist is written. Number every item, write the original text or the shape, and mark anything you can't make out as "illegible".
+Ordered top to bottom by "how much area it can exclude": one clue higher up outweighs twenty below it.
+
+## 0. First scan the whole frame
+
+```bash
+uv run scripts/imgprep.py edges photo.jpg --out-dir edges/        # one zoomed crop per edge and per corner
+uv run scripts/imgprep.py zoom photo.jpg --box x0,y0,x1,y1 --scale 4 --out z1.png
+```
+
+- Go through the four corners, the bottom edge, and the top edge one by one: cables, boat bows, car window frames, aircraft wings, fingers, watermarks, screenshot UI.
+- Zoom into every distant sign and every vehicle once. The eye is pulled first to the most prominent landmark; small street signs are often more useful.
+
+## 1. Shooting conditions (decide which branch to take)
+
+| Item | What to record | Used for |
+|---|---|---|
+| Shooting platform | ground / upper floor of a building / in a vehicle / on a boat or pontoon / cable car / train / airplane / drone | boat bow → at a dock or the waterside; car window → on a road, record the direction of travel; aircraft wing → aerial branch. **Tell apart top-down from a building vs an expressway service area vs inside a vehicle on an elevated road**: from a building the camera position is steady, you can look down on car roofs and building roofs, and window frames or sills are common; at a service area look at the orientation of rows of parking spaces, slope-protection retaining walls, trash bins, and gas station facilities; inside a vehicle there are window frames, windshield reflections, guardrails rushing past. Get the platform wrong and you pick the wrong co-occurrence conditions later |
+| Camera height | eye level or looking down; how many stories' rooftops you can look down on | filter buildings by height; test claims like "shot from the road" |
+| Focal length | EXIF equivalent focal length; if absent, judge from distortion and near/far compression | field of view, distance estimates |
+| Image processing | rephotographed (reflections, print edges, perspective distortion), screenshot, cropped, mirrored (reversed text, driver's seat on the unexpected side; with no text, look at hand gestures and clocks; reposted videos are often flipped horizontally); **video screenshot** (vertical 9:16, platform watermark, subtitle bar) with unknown zoom | correct before searching; flip mirrored images back before reading; compute the field of view of a video screenshot as a range (`geometry.md` section 1) |
+| Time | watermark, EXIF, shadow length and direction, daylight, season | sky branch; phenology judgments |
+
+## 2. Layer 1: text, phone numbers, language
+
+- Shop signs, street-name signs, organization names, construction notices, public notices: copy the original text and search the original, not a translation.
+- **Issuing authority at the bottom of signs** (〇〇交警支队 traffic police detachment, 〇〇城管 urban management, 〇〇警察署 police station, 〇〇土木事務所 civil engineering office): often gives the district (county) directly.
+- **Destinations and terrain words mentioned in notices** ("no way through to the coast ahead", "to such-and-such scenic area").
+- **Phone numbers**: record the area-code part and the digit grouping (first work out how many digits the area code has).
+- Language and script: simplified/traditional characters, dialect characters; for foreign text, identify the writing system before reading the characters.
+- **Official multilingual signs**: two languages on one official sign → an officially multilingual area (not "near a country that speaks that language").
+- Chain brands: note sub-brands and business lines (only sub-brands with few stores have locating value).
+
+## 3. Layer 2: vehicles and roads
+
+- **Plates**: characters (province/city code) → if unreadable, background color, color bands, graphics, border → failing that, aspect ratio (Europe long and narrow, North America about 2:1). Note where the vehicle is parked (plates in a parking lot count only as weak).
+- **Driving side**: which side traffic keeps to, which side the driver's seat is on, which way cars parked at the roadside face.
+- **Public transport**: bus operator abbreviation, route number, rear ads; taxi color; bus roof color (clearest in top-down shots).
+- Road marking color and style, guardrails, curb paint (alternating red and white, etc.), streetlight design and color, gutters, whether there is a grass strip between sidewalk and roadway.
+- Overhead gantry direction signs: when the text is illegible, count the destination lines and note the background color.
+
+## 4. Layer 3: infrastructure specs (can be looked up in data)
+
+- **Railways**: catenary or not; masts on one side (usually single-track) or on both sides or with portal frames (double-track); how many parallel tracks at a level crossing; viaduct or embankment; railway company name on crossing signs.
+- **Power lines**: tower type (single tubular steel pole / angle-steel lattice tower); how many conductors per bundle per phase (common in China: 4 per bundle = 500 kV); angle relative to railways, rivers, roads.
+- **Special transport facilities**: cross-river cableways, road/rail-transit bridges, light rail through a building, high-speed rail bridges, long urban escalators, cable cars.
+- **Classify cables at the frame edges**: high-voltage lines (tall towers, insulators, separate phases, nearly horizontal over crossing spans) / passenger cableways (two or three closely parallel track ropes + a haul rope, steeply slanting and sagging) / cable-stayed bridge stays (fanning from the tower top) / ordinary wires (thin, messy, hung on utility poles).
+- Solar water heaters, density of AC outdoor units, security window grilles, rooftop water tanks.
+
+## 5. Layer 4: sky
+
+- Shadows: direction (relative to the frame, relative to the road), ratio of length to object height, whether they are parallel to each other.
+- Satellite TV dishes: heading, size (small Hu Hu Tong dish / large dish).
+- Lit face: which face of a building is bright.
+- The sun itself, sunrise and sunset, backlit silhouettes.
+
+Details in `sky.md`. Without a time of day, shadow direction is only a weak constraint.
+
+## 6. Layer 5: architecture and vegetation
+
+- Roof color and material (red terracotta / gray tile / flat roof / blue sheet metal), facade material (tile color, paint, stone).
+- For building elements, check the basic shape before using style words: round or pointed arches, number of window panes, columns.
+- Skyline: whether there are office clusters or supertall towers (weak: judges the city's tier).
+- Vegetation: evergreen or deciduous, flowering stage (first bloom / full bloom / petal fall), palms, bamboo groves, rice paddy color. **It must be paired with the month of capture to mean anything.**
+- Fog, cloud, snow, ice: only weak supporting evidence.
+
+## 7. Layer 6: terrain and water
+
+- Plain or mountains; how far beyond the far bank the mountains rise; whether buildings are stacked up the slopes.
+- Rivers: width (use houses, lanes, terraces as a ruler), water color (sediment load), landforms on both banks, river islands, confluences, bridge positions.
+- Distant mountain outlines; towers, statues, pylons on peaks (skyline fingerprint).
+- Coastlines; mountain silhouettes across a bay.
+
+## 8. Negative clues
+
+Write down what is absent: no utility poles, no snow, no palms, no motorcycles, no Chinese-character signs, no office towers. Negative clues can exclude regions just like positive ones.
+**Negative clues depend on visibility**: not seeing mountains or a river in the distance in haze, backlight, or dusk doesn't mean they aren't there; to use one, first compute from the distance whether it should be visible (`terrain.py view`, `geo.py frame`); otherwise use it only for ranking.
+
+## Rules for writing the checklist
+
+- For anything unclear, describe only its shape, color, and position ("a light-colored patch with clean edges on the ridge"); **don't rush to name it**. A wrong name gets it discarded as something ordinary.
+- If you can't count it, write a broad word ("polygon"), not a wrong exact number.
+- Text that is only "read" after zooming in to the level of compression noise is a hypothesis.
+- When two clues conflict, write it down: it may be mirroring, an imported vehicle, a border area, a composite image.
+
+
+---
+
+<a id="source-f55f3462696c5eb4"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/search.md
+
+# Search: reverse image search, keyword image search, social media search
+
+Use at step 3, in parallel with lookup-table clues. In 5 of the 20 puzzles in the videos this step was the breakthrough, yet it costs the least.
+
+## 1. Reverse image search
+
+```bash
+# Make variants first: tight crop of a distinctive object / horizontal flip / grayscale enhancement / color-cast removal; rectify rephotographed material first
+uv run scripts/imgprep.py variants photo.jpg --box 300,120,900,760 --out-dir v/
+uv run scripts/imgprep.py variants photo.jpg --persp 312,140,880,95,905,770,290,720 --box ... --out-dir v/
+# Baidu image search + Yandex; each image gets a result screenshot and JSON
+uv run scripts/revimg.py photo.jpg v/*.jpg --out-dir rev/
+```
+
+**Always open the result screenshots and look**: extracted text is only an aid; the scenes in similar images and the titles of source posts matter more. Baidu's similar images are also saved as a numbered contact sheet `<name>_baidu_similar.jpg` (the top-left cell is the query image; number i corresponds to the source page of JSON `similar[i]`). Look at it first: for near-duplicate photos of the same object or scene, the source page (Dianping, Douyin, Xiaohongshu) often gives the shop name or location tag directly.
+
+**How to use place-name labels**: Baidu image search's "图中可能是…" ("the image may show…"), Yandex labels and the Lens AI overview are all candidates; count votes separately by level:
+- City level: count which city each crop and each engine named. The same city named by two different crops is more credible than "two contradictory specific places"; specific places that don't agree don't cancel the city they jointly point to.
+- Place level: when a label is the name of a residential compound, housing development, hotel or organization, get its coordinates with `poi.py` and check; this often gets you to the area in one step:
+
+```bash
+uv run scripts/poi.py "<compound name>" --city <city> --region <cc> --out pois.json   # every same-name point in the city (sources from the region pack, WGS84)
+uv run scripts/poi.py "<compound name>" --region <cc>                                  # no city: which cities in the country have a same-name point
+uv run scripts/tiles.py sheet --points pois.json --zoom 18 --out pois_sheet.jpg
+```
+
+- When a label is the specific name of a common facility such as a school or residential compound, first open the "图片来源" ("image source") thumbnails to see whether it's the same place (one call): names on images of playgrounds or housing are mostly assembled by voting over similar images; if it isn't the same place, downgrade it to weak and don't bother getting coordinates.
+- **Facility-type words** in generic labels ("grain drying complex", "cement plant", "greenhouse") are useful: use them to look up where that industry is concentrated, for category inference and candidate areas.
+- When the label is generic ("blocks of housing", "city street", "school playground"), treat it only as weak evidence; if the whole image + one tight crop, one round in each of two engines, give only generic labels, stop; don't keep trying variants.
+
+| Situation | What to do | Source |
+|---|---|---|
+| The whole image finds nothing | Box only the most distinctive object (statue, building, ornament); remove the sky and background buildings | v010-5, v010-6 |
+| Stock photos may have been taken from the other side | Flip horizontally and search again | v010-5 (hit only after flipping) |
+| Rephotographed material, oblique shots | Perspective-rectify, remove glare | v004 |
+| Old photos with a yellow or purple cast | Remove the color cast or convert to grayscale | v010-6 |
+| One engine has no results | Switch engines: Baidu is best for Chinese web pages, Weibo, Baijiahao and scenic-area content; Yandex fills in building and street scenes and foreign content | v009 (Yandex found nothing, Baidu hit) |
+| The search UI language biases results | Google Lens with a Chinese UI favors similar buildings on Chinese sites; for foreign scenes switch to English or the local language | v004 |
+
+**Google Lens**: from the server's egress it demands a CAPTCHA, so the script doesn't do it. If you have a browser tool (such as Claude in Chrome, which uses the user's own browser), use it directly: Google Images home → search by image → upload. In tests it is often stronger than Baidu and Yandex, but keep its two result blocks apart:
+- "Exact matches / pages that include this image": provenance evidence; usable.
+- "AI Overview": forces a place name out of similar-looking photos; a different crop of the same image can yield two places a dozen or so km apart. Treat it only as a candidate; it must be verified back at steps 6 and 7.
+
+Without a browser tool, when Baidu and Yandex both have no results and the frame shows a foreign landmark or object, ask the user to try Lens once in their own browser.
+
+### Keyword search in the local language
+
+Write queries in the local language as well as English. `revimg.py --query "<words>"` runs keyword search on Chinese engines only (Bing China, Baidu Images, Sogou Images); elsewhere use your general web and image search tools. Region packs describe which local engines and platforms work and how to phrase queries (`regions.py show <cc>`).
+
+### After a hit
+
+- **Look at the rest of the set**: the hit post is often a set of images, and the others may show plates, road signs or shop names (v009: the plate was in the 5th image of the set). First use shared fixed objects (streetlights, walls, chimneys) to confirm that the photos in the set and the puzzle image are the same place.
+- **The candidate's background doesn't match**: it may be a replica, an identical installation, or another branch of the same chain. Once you have the proper name, search another round for "<proper name> 复制品 / replica / 同款" (复制品 = replica, 同款 = same model); the official introduction where the original stands often says where the replicas are (v004).
+- **The hit is only a "similar scene"**: use it as a clue (city, scenic-area name), not as a conclusion; go back to steps 6 and 7 to verify.
+- **For news images, first judge whether it's a real photo**: many news sites illustrate articles with stock images, illustrations or even generated images; before comparing facades, check whether it is this place.
+
+## 2. Choose where to search by object type
+
+Region packs add local platforms per object type (`regions.py show <cc>`).
+
+| Object | Where to search | Source |
+|---|---|---|
+| Scenic-area buildings, viral check-in spots | The local short-video and photo-sharing platforms (the region pack names them); official scenic-area accounts post videos from the same angle | v010-2, v009 |
+| Statues, small park features, foreign attractions | User photos on travel review sites (Tripadvisor and local equivalents); Google Lens | v010-6 |
+| New residential developments, commercial complexes | Development albums and listing photos on local property sites; page all the way to the signboard | v010-5 |
+| Old buildings, historic sites | Local culture-and-tourism and protected-heritage-site pages; stock image sites (Getty, Alamy and local agencies), whose captions carry place names and years | v004 |
+| Ordinary streets and residential areas | Image search adds little; prioritize geometry and infrastructure; when even the city isn't fixed, sample one page of arterial-road street view per candidate city and compare municipal fixtures (the street-view script the region pack names) | — |
+| Sub-brand stores of chain brands (truck service, refurbishment, specialty stores) | **Search opening press releases first** ("开业 / inaugura / abre / opens + sub-brand + state or city"; 开业 = opens), trade media often give the street address; treat the official store locator only as a candidate pool: it doesn't tag sub-brands, and its coordinates may be off by several km | blind test |
+| Nameless facilities found on satellite imagery (plants, warehouses, farms, mines) | Search the web and news for the facility-type word in the local language + nearby place names, and compare the accompanying photos with the facade; once you find the name, search images another round | v013 |
+| Vehicle livery (bus, taxi, school bus) | `revimg.py --query "<city> <color description> bus"` in the local language, and read route signs and company names from the result images; first resolve any place name you read to a district with `poi.py` before using it; don't treat a vehicle from district A as a clue for district B | v014 |
+
+## 3. Descriptive keyword image search
+
+Suits objects that "you can't name, but have a rare shape" (the v004 fountain).
+
+1. Write the object as a "shape + components + position" phrase: `顶上有金色球形装饰的白色钟楼` (white clock tower with a golden ball ornament on top), `蓝色拱形顶棚的人行天桥` (pedestrian bridge with a blue arched canopy).
+2. Prepare both a version **with place names** and one **without**, one set each in the local language and in English, and search them together. Finding nothing with place names is normal: replicas and obscure places have few photos online, while there is more material on the original and on similar objects.
+3. If you can't count the shapes, use broad words; don't write a wrong count.
+4. Use style words (Romanesque, Gothic, Hui-style) only after checking the form: if the arches are pointed, it isn't Romanesque.
+
+## 4. Social media and check-in spot search
+
+- Viral scenery (cherry-blossom streets, ginkgo avenues, influencer walls, check-in cafés): search `<city> + <scenery>` on the local platforms, **in both the local language and English** (English posts about popular foreign streets often include the street name).
+- Other posts from the same place give more angles (houses, steps, chimneys) and even location tags.
+- Locals' photos of the same mountains or the same river: look in the candidate town's local feed or its place page on those platforms (the v010-1 creator spoofed the device location to the candidate township to browse local content).
+- A city usually has only a dozen or so popular check-in streets; find the list first, then check them one by one.
+
+## 5. Open data (use when clearly effective)
+
+- **City street-tree data** (species, trunk diameter, height class, address number, coordinates): many cities abroad have open datasets (e.g., Vancouver's `public-trees` on `opendata.vancouver.ca`, about 180,000 trees citywide, `exports/csv` takes about 20 s in one request). Suited to puzzles with "a row of some kind of tree + residential street, no text": it narrows the whole city to a few dozen street segments, with the ground truth among them (proposed in the v009 breakdown, used in one real case). Method:
+  1. **Pull all species**, not just the target species: later you need to judge "are there trees across the street", and pulling only Prunus would make an opposite side planted with other trees look empty.
+  2. **Use cultivar and trunk diameter only to sort, never to filter**: the cultivar in the municipal inventory may not match the actual tree (pale pink Somei-Yoshino-type blossoms in the photo; the inventory lists a white-flowered cultivar), and the trunk diameter may have been measured years ago. Cultivars of the same genus with similar flower color all go in as candidates; exclusion can only rely on invariant features in street view.
+  3. **Use odd/even address numbers to fix which side of the street the trees are on**: comparing the coordinates of odd- and even-numbered trees on the same street tells you (in Vancouver, odd numbers are on the north side of east–west Avenues and the west side of north–south Streets; east–west Streets follow the Avenue rule). Then filter with "which side you're standing on, which way you're facing" from the shadows.
+  4. **Compute the across-the-street constraint from the field of view**: a portrait phone's horizontal FOV is about 50°, so the grass strip across the street (10–20 m sideways) enters the frame only beyond about 25 m ahead; "no trees across the street" constrains only about 25–50 m ahead, not close by.
+  5. Add the filtered street segments to the board in one go with `board.py add --from <street-segment JSON> --level road`; when you drop one, write `evidence --against` with a comparison image (SKILL hard rule 9).
+  6. For street view, first pick historical captures from the same season as the photo (`gsv.py near` to see the history, `sheet --date <year>`) and compare facades, retaining walls and lamp-post positions; in summer captures tree crowns and bloom differ a lot, so don't skip a segment because "the trees look small".
+- Local government and media reports: after locating, look up the name, size and year built of unusual man-made objects in the frame (scenic spots, towers, statues) (v008).
+
+## 6. Building-class scan (every church / mosque / station in a region)
+
+Use for an unnamed building of a recognizable class seen from the street. Narrow to a city or smaller justified bbox first, and check `osm.py coverage` before enumerating:
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/osm.py find --bbox <s,w,n,e> '["building"="church"]' --out targets.json        # or ["amenity"="place_of_worship"]["religion"="muslim"], ["railway"="station"] …
+uv run ${CLAUDE_SKILL_DIR}/scripts/gsv.py targets --points targets.json --per 2 --out targets.index.json --sheet first.jpg
+uv run ${CLAUDE_SKILL_DIR}/scripts/match.py rank --query photo.jpg --query-box <building part> --items targets.index.json --render gsv --refine sift --top 10 --out r.json --sheet r.jpg
+```
+
+- `targets` keeps up to `--per` official panoramas per target, 12–70 m away and ≥15 m apart by default, each facing the building. Coverage tiles are cached and shared by workers.
+- Keep each index within `match.py`'s default 400-view limit (at most 200 targets with `--per 2`). It loads all candidate images into memory; raising `--max-candidates` to a country-wide view count can exhaust memory. Narrow the bbox or split the point list before scanning, and save each batch's results separately; SIFT refinement within separate batches is not a global ranking.
+- Compare multiple views of shortlisted targets. Repetitive brickwork can produce false SIFT matches; confirm ≥3 invariant features as in SKILL step 5.
+- Empty coverage does not exclude a target: the layer can omit panoramas that `gsv.py near <lat,lon> --radius 130` finds. Check shortlisted targets with `near`, including historical captures when appropriate.
+
+## Common mistakes
+
+- Using only one engine and searching only the whole image; after a failure, not changing the image or the engine.
+- Turning the "object category" from an AI or image recognition directly into a location ("boat-shaped sculpture → tourist city"); this jump counts only as weak evidence (v005).
+- Getting carried off by the "most famous similar place" the search turns up and forgetting to come back and check bearings and details (the main way the AI failed in v010).
+- Two engines each point at a different city, and you draw a big circle around the midpoint of the two and call it done: instead run a discriminating test and pick one as the main answer (SKILL hard rule 8).
+- Image search gave a residential compound or housing-development name, and you didn't get its coordinates.
+
+
+---
+
+<a id="source-fdddd8aef1c20048"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/sky.md
+
+# Sky clues: sun, shadows, satellite dishes
+
+Scripts: `scripts/sun.py` (`pos` / `ratio` / `locate` / `when` / `street` / `facing` / `compass` / `dish`). Compared with NREL SPA, the algorithm's error is ≤0.02°.
+When there are no landmarks and text only gets you to a province or country, this is the main way to shrink hundreds of kilometers to tens of kilometers (v001: from hundreds of kilometers down to tens).
+
+## When to take this branch
+
+| Condition | What you get |
+|---|---|
+| Clear shadows + known capture time (puzzle setter's hint, EXIF, screenshot status bar, chat log timestamps) | Sun elevation angle → a band on the map; plus direction → a segment of the band |
+| Clear shadows + location already fixed | Capture time and date (two candidate sets) |
+| Satellite TV dishes in the frame | Photo heading (use them as a compass); dish azimuth → longitude range |
+| The sun itself in the frame (sunrise/sunset, backlight) | Lens heading and the true bearings of objects in the frame (`sun.py compass`); given a clock time, you can also exclude countries with the wrong time zone |
+| Overcast, night, indoors | Not usable; don't force a calculation |
+
+Be clear about the capture time: posting time and IP location are not the capture time and place; treat them only as hypotheses to verify.
+
+**Without a time, don't infer road direction, river direction or course from the sun's direction**. The sun at the side of the frame only says the lens is roughly perpendicular to the sun's azimuth; morning, noon and afternoon correspond to completely different directions (the creators in v002, v008 and v012 all reasoned this way and happened to be right; the method doesn't hold).
+
+## 1. Determine the photo heading first
+
+In order of reliability:
+1. **Satellite dishes**: dishes in the same area point the same way. China's Hu Hu Tong (direct-to-home) small dishes point at ChinaSat 9; in eastern cities they face southwest (about 215°–227°), in the west south or even southeast (see the table in section 5). In Europe dishes generally face south, slightly east.
+2. **Shadows or lit faces + time**: north of the Tropic of Cancer, the noon shadow points due north, northwest in the morning and northeast in the afternoon, turning clockwise through the day. With a date and time, compute it; don't estimate:
+   `uv run scripts/sun.py pos --at <approx. location> --time 2025-01-26T08:53 --tz Asia/Shanghai`
+   On winter mornings before 9 a.m. the sun's azimuth is about 120°, not due east (v006 took the sun as due east; the river direction could be off by 30°). Whichever face of a building is brightest faces roughly toward the sun.
+3. **Lit faces** (when there's no measurable shadow): a wall is lit if and only if the angle between the sun's azimuth and the wall's normal is less than 90°. Intersect the lit/shaded state of several walls and you get a range for the lens heading:
+   `uv run scripts/sun.py facing --at <approx. location> --time <time> --tz <time zone> --lit left --shaded camera`
+   Describe walls by which way they face in the frame: `camera` faces the lens, `left` faces frame left, `right` faces frame right. At the range boundaries the wall is nearly parallel to the sunlight; don't treat them as hard boundaries.
+   **When shadow direction conflicts with wall brightness or the lit side of tree trunks, trust the shadow** (in two cases, reading wall brightness put the sun on the wrong side): white walls and pale bark also look bright in diffuse light. The easiest thing to read is a car parked at the roadside: use the car length of about 4.5 m as a ruler; how far the shadow extends beyond the front of the car and which side of the car it falls toward directly tell you whether the sun is in front or behind, left or right, and roughly how low its elevation angle is. Tree-shadow stripes on sidewalks come from trees outside the frame and their direction is hard to judge; use them only as a reference.
+4. **The sun itself in the frame**: it is the compass. Compute the lens heading from the sun's pixel position; you can also compute the true bearing of any object in the frame (tower, chimney, building corner), to judge "which block is the tower in the photo" within a candidate factory site and which side of the building the camera position is on:
+   `uv run scripts/sun.py compass --at <candidate area> --time <clock time> --dates <possible date range> --tz <time zone> --sun-x <pixels> --width <image width> --hfov <FOV range> --x <object pixels>`
+   - Only a time given, no date: compute over the possible date range, and the bearings become ranges; then add `--elev lo:hi` from how high the sun is above the horizon in the frame; dates whose elevation doesn't match are dropped automatically and the range narrows.
+   - Neither time nor date: `compass` defaults to the whole year, split into a sunrise set and a sunset set. Around 30°N, the sunset azimuth swings between about 240° and 300° over a year; the difference is enough to make a top-down template not match. **Posting time is not capture time**; don't use the posting month to narrow the date.
+   - Telling sunrise from sunset: what the poster says, sky color, shadow changes, road traffic and streetlights. Don't use reasons like "nobody at the school → after school", which holidays and weekends overturn (v014). If you can't tell, build templates for both headings.
+5. **Roads on satellite imagery**: once you have location candidates, match the directions of roads, walls and riverbanks in the frame against satellite imagery.
+6. Claims like moss or tree crowns leaning one way are unreliable; don't use them.
+
+## 2. Measure the shadow length ratio
+
+`sun elevation angle = atan(object height / shadow length)`. Only the ratio is needed, not real sizes.
+
+- Pick **vertical** objects (wall corners, utility poles, lamp posts, vertical wall edges) and their shadows on **flat** ground.
+- Prefer shadows parallel to the image plane (spread sideways); a shadow pointing toward or away from the lens is heavily foreshortened, so pick another object.
+- For wide-angle photos, first correct barrel distortion, then draw guide lines along the perspective direction to measure (the v001 creator corrected first, then measured).
+- In the same image, the shadows of vertical objects on flat ground must be parallel to each other. Not parallel = uneven ground, a non-vertical object, an artificial light source or a composite image.
+- Measure with at least two objects and take a range. A 20% shadow-length error gives a 6–8° elevation-angle error near 45°.
+
+```bash
+uv run scripts/sun.py ratio --shadow 1.2           # 1:1.2 → 39.8°
+```
+
+## 3. Known time → a band on the map
+
+The points where the sun's elevation angle is the same at the same moment form a large circle centered on the subsolar point; adding tolerance makes it a band. Intersect it with the existing candidate areas.
+
+```bash
+# Beijing time 2023-08-15 16:20, shadow ratio 1.2, ±1°, candidate area in North China
+uv run scripts/sun.py locate --time 2023-08-15T16:20 --tz Asia/Shanghai --ratio 1.2 --tol 1 \
+        --bbox 34,110,42,122 --step 0.05 --mosaic north.jpg --out band.jpg
+# Add the shadow bearing (northeast, 60°±10°) and the band shrinks to a segment
+uv run scripts/sun.py locate ... --shadow-bearing 60 --az-tol 10
+```
+
+- When the time is uncertain, add `--time-tol 30` (±30 minutes).
+- `--mosaic` draws the band directly on a low-zoom base map from `tiles.py fetch` (zoom 7–9), for the evidence image.
+- Verified: plugging in a video puzzle's known answer point and the time the puzzle setter gave, the computed shadow ratio matched the creator's measurement.
+
+### China-specific: a single Beijing time = a longitude clue
+
+The whole country uses UTC+8, yet spans 73°E–135°E. Beijing time of solar noon (shadow pointing due north): Shanghai about 11:56, Lanzhou about 13:06, Lhasa about 13:57, Urumqi about 14:11 (June; it shifts by about another ±15 minutes over the year).
+So **knowing the clock time + being able to see the shadow direction** directly constrains longitude: if the shadow still points due north at 2 p.m., it can't be in the east.
+
+## 4. Known location → capture time and date
+
+```bash
+uv run scripts/sun.py when --at 30.25,120.16 --date 2024-10-01 --tz Asia/Shanghai --ratio 1.2 --shadow-bearing 30
+uv run scripts/sun.py when --at 30.25,120.16 --dates 2024-01-01:2024-12-31 --tz Asia/Shanghai --elev 40 --shadow-bearing 330
+```
+
+- The same sun position occurs twice a year (symmetric about the summer or winter solstice), so results always come in two sets of dates; pick one using vegetation (fallen leaves, flowering, rice-paddy color) and clothing.
+- Date resolution is high around the equinoxes; for several weeks around the solstices dates are nearly indistinguishable; say so when reporting.
+- The same elevation angle occurs at two times in a day, morning and afternoon; separate them by shadow **direction** (v007: 08:39 shadow to the northwest, 15:03 shadow to the northeast).
+- **Report the sensitivity before the time**: `when` prints "1° off ≈ N minutes". Write out how many minutes a 1 m error in object height and a 1 m error in shadow length each correspond to (v007: each 1 m of object-height error shifted the time by about 13 minutes; the creator's ±5 minutes was luck).
+- Align the shadow tip with the edge that actually casts it (eave, canopy, railing top), not with the base of the wall.
+
+### Known city and date → street orientation
+
+Only the angle of the shadow's **direction** relative to the street lets you infer the street orientation; shadow length doesn't (v009 inferred the orientation from shadow length; the reasoning doesn't hold).
+
+```bash
+# In the top-down view, turning clockwise from the street direction to the shadow direction is 90° (shadow perpendicular to the street); if you can't tell clockwise from counterclockwise, add --both
+uv run scripts/sun.py street --at 49.25,-123.10 --date 2025-04-01 --tz America/Vancouver --ratio 1.5 --tol 4 --shadow-rel 90
+```
+
+Outputs two sets of directions, morning and afternoon. In a grid city one direction cuts out half the streets; when the date is uncertain, try several days and see how much the direction changes.
+
+## 5. Satellite TV dishes
+
+Dishes point at geostationary satellites above the equator; the azimuth is determined by "the difference between the local longitude and the satellite's longitude".
+
+China's Hu Hu Tong / Cun Cun Tong (direct-to-home / village coverage) small dishes (35–60 cm diameter, common on rooftops in rural areas and urban villages) almost all point at ChinaSat 9 (92.2°E):
+
+| City | Azimuth | Elevation |
+|---|---|---|
+| Harbin | 224° | 27° |
+| Beijing | 215° | 38° |
+| Shanghai | 227° | 42° |
+| Guangzhou | 225° | 54° |
+| Lanzhou | 199° | 46° |
+| Chengdu | 202° | 52° |
+| Kunming | 204° | 59° |
+| Lhasa | 178° | 55° |
+| Urumqi | 173° | 39° |
+| Kashgar | 156° | 41° |
+
+```bash
+uv run scripts/sun.py dish --at 31.2,121.5 --sat 92.2               # forward
+uv run scripts/sun.py dish --lat 31.2 --sat 92.2 --azimuth 213       # dish faces 213° → longitude about 109°–113°
+```
+
+- Azimuth readings are more reliable than elevation. Small dishes are mostly offset-feed; the dish face looks more "upright" than its actual pointing (offset angle 20°–25°), so don't take the dish face tilt as the elevation angle.
+- Large dishes (1.5 m and up) at institutions and cable TV stations may point at ChinaSat 6B (115.5°) or an AsiaSat satellite; you can't apply the Hu Hu Tong table to them.
+- Common in Europe: Astra 1 (19.2°E, Germany/Austria), Hot Bird (13°E, Italy), Astra 2 (28.2°E, UK). There's a list in `sun.py`.
+
+## Common mistakes
+
+- Wrong time zone or DST: use an IANA name for `--tz` (`Europe/Berlin` handles DST automatically); don't hand-write +1/+2.
+- Taking posting time as capture time.
+- Measuring shadow length on slopes or steps; taking a slanted shadow (from a non-vertical object) as the shadow of a vertical object.
+- Computing a band and looking only at its center line: the whole band within tolerance must be checked; prioritize the parts that intersect other clues.
+
+
+---
+
+<a id="source-4a5e552a7ec52252"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/references/verify.md
+
+# Confirmation and falsification
+
+Used in steps 6–8. In the videos, the creators' most common problem isn't failing to find the place but **confirming too loosely**: declaring after checking only two items (v007), claiming a "two-meter error" from one alignment line (v006), dropping a pin and calling it found (v005).
+AI's problem is worse: saying it "measured on the map" when it didn't (v010). The rules in this file are mandatory.
+
+## 1. Write falsification conditions before looking at candidates
+
+Before opening satellite imagery or street view, first write 2–3 "if this appears, give up" conditions, for example:
+- "The road should be on the left of the building; if it's on the right, exclude"
+- "The distant mountain should be on the far bank of the river; if it's on the same side, exclude"
+- "Sunset has to be visible from here, so the camera heading must lean west"
+
+If it appears, give up; don't look for reasons to explain it away. Confirmation bias is the number-one failure mode of this craft: you find a place that "looks right" and start making excuses for the differences.
+
+**Falsification conditions themselves must also be verified**, otherwise they backfire and kill the correct answer:
+- "From here, the landmark must be in the frame" → first compute it with `geo.py frame` (field-of-view range, occlusion, pixel size); see `geometry.md` section 11.
+- Details inferred from a distant view, like "the line should turn at the tower" or "the building should have 8 floors" → if not verified, only rank; don't exclude.
+- Record the candidates excluded by falsification conditions; when no candidate matches, first go back and recheck these conditions.
+
+## 2. What to compare, what not to
+
+| Compare (invariant features) | Don't compare (things that change) |
+|---|---|
+| Building outline, number of floors, window positions and spacing, balcony shape | Parked cars, pedestrians |
+| Positions and number of utility poles and streetlights | Signs, ads, awnings (often replaced) |
+| Curbs, wall corners, steps, manhole cover positions | How much foliage, whether flowers are in bloom |
+| Ridgelines, riverbank lines, bridge positions | Construction hoarding, temporary structures |
+
+- Only **independent** items count: the same sign photographed three times is one item, not three.
+- To road level: ≥2 unique features; to building level: ≥3, plus two independent camera-position constraints.
+- Common features like "factory buildings all faced with yellow tiles" don't count as unique features.
+
+## 3. Bearing self-check (required before output)
+
+Draw a top-down sketch on satellite imagery: camera position → foreground object → midground object → distant landmark, plus the direction of the sun or shadows. Check each item:
+1. **Left-right order**: if A is left of B in the photo, it must also be so as seen from the candidate camera position.
+2. **Near-far relationship**: if A blocks B in the photo, the candidate camera position, A and B must be roughly collinear, with A nearer.
+3. **Heading and sun**: for a sunset photo the camera must face west; if, from the candidate point, getting the image's elements into one frame requires facing southeast, it can't be a sunset (v010-7: the point the AI chose could only shoot sunrise; off by 850 km).
+4. **Sight line ahead along the road**: a tower straight ahead in a photo taken from inside a car must actually be in that road's direction of travel (v010-4 corrected a misidentified building with this one check).
+5. **Compute the bearing first, then identify the structure**: which block on the satellite image corresponds to the tower, chimney or building corner in the photo is an unverified interpretation. When the sun is in the frame, use `sun.py compass --x <structure pixel>` to compute its true bearing, and search the satellite image along that bearing from the candidate camera position; don't first decide on the satellite image that "this is the tower" and then reason about left and right, and don't judge which block is tall from how the OSM building outlines are cut — for tall structures, look at shadow length and side walls on the satellite image. A misidentification makes the bearing self-check kill the correct candidate.
+   Identifying tall structures on satellite imagery: first find a tall building that is certainly vertical and see which of its walls is visible — the satellite is on that side, and the tops of all tall objects lean the opposite way; only blocks with a visible side wall are tall, and the foot of a tower is at the bottom edge of the side wall, where the shadow starts, not at the center of the roof's projection; shadow direction is set by the sun and is not the same thing as lean direction. When both identifications are plausible, draw both sets of camera positions and check each against the bearing computed by `sun.py compass --x`.
+6. **When bearings don't match, check for mirroring and sunrise first**: screenshots of reposted videos are often horizontally flipped. Without text, look at gestures (usually right-handed), clocks, the driver's side of vehicles; when the candidate facility is unique and only left-right doesn't match, build two templates each for "original / mirrored" and "sunset / sunrise" and check each one, then decide whether to downgrade or widen the search.
+
+If any item fails, exclude, or downgrade and write down why.
+
+## 4. How to confirm without street view
+
+| Situation | Alternative |
+|---|---|
+| Mountains, outskirts, looking across a river from afar | `terrain.py view --photo` renders the candidate camera position; compare ridgeline outlines; remember the outline only proves "on this sight line", you still need a second constraint. With many candidates, batch-score first, then overlay (`geometry.md` 7.4) |
+| Suburban hotels, factory compounds, scenic areas | Map POI photos, real photos of the hotel/scenic area online, tourist photos; compare the type, number and spacing of the pylons on the skyline (v011) |
+| New housing developments, commercial complexes | Development photo albums on real-estate sites (v010-5) |
+| Outside China | `gsv.py near / sheet --headings / render` (Google Street View, no key); when the puzzle image is a street view screenshot, use the watermark year with `sheet --date <year>` to get the same capture; clouds and season can also be compared |
+| Rural areas, factory compounds, farms outside China, with no street view | **First find a name for the facility**: OSM name, nearby place name + the local-language word for the facility type (sawmill: scierie / aserradero and the like), search the web, and compare facade details in images from news, encyclopedias, company websites and blogs (v013's creator confirmed it this way); then try Wikimedia Commons image search by coordinates (no key, see `data-sources.md`); Mapillary needs a token, KartaView has little coverage |
+| No ground photos of any kind | ≥3 top-down features uniquely matched on satellite imagery + bearing self-check passed: report area level as high, road as medium, building as low, and state that ground-level imagery is missing; don't fall back to district level overall just because there's no street view |
+
+### Finding a storefront along a road
+
+When you know the road name (address from a news article, the street given by reverse image search) but not the street number:
+
+```bash
+uv run scripts/osm.py along --bbox <s,w,n,e> --line '["highway"]["name"~"<road name fragment>"]' --step 120 --out pts.json
+uv run scripts/gsv.py sheet --points pts.json --headings 30,90 --out road.jpg   # in China use baidu_pano.py instead
+```
+
+- Spacing ≤150 m: a storefront is only visible within a very narrow angle; at 400 m spacing you can easily miss every single one.
+- Set headings from "direction of travel + which side the shop is on": in a right-hand-traffic country, shooting a shop on the right from inside a car while heading north, use 20–90°. To reproduce an upward shot of a storefront from inside a car, add `--pitch 15–20`.
+- To find roadside factory buildings and fields, use satellite thumbnails: `--step 300–500 --side <north|south|east|west> --offset <meters from the road to the building>`, then `tiles.py sheet --zoom 16–17`.
+
+### Picking street view points
+
+- When there are many panorama points, group them by capture date and road, and render the ones with an open view first: waterside paths, bridges, intersections, older captures not blocked by street trees. Newer captures on main roads are often completely blocked by trees (the truly usable ones are often older-capture points on waterside paths and construction access roads).
+- Look around from one point: `baidu_pano.py sheet --ids <id> --headings 0,60,120,180,240,300` (outside China use `gsv.py`).
+- For farmland and countryside in China, first probe one or two points with `baidu_pano.py near <lat,lon>` to see whether there's a panorama, then decide whether to `scan`: in a real case a 1.5 km-radius `scan` over farmland ran for 5 minutes and found none.
+
+## 5. Overlay comparison
+
+When the two images have different perspectives, crop the sign, utility pole or window from the original, rotate and scale it, and paste it onto the corresponding position in the street view screenshot; whether it's the same object is visible at a glance (v002). Same for water and mountain outlines: rotate and stretch, then overlay onto satellite imagery and compare point by point (v012).
+
+```bash
+uv run scripts/imgprep.py zoom photo.jpg --box ... --scale 2 --out part.png
+uv run scripts/baidu_pano.py render <panoid> --heading 47 --out sv.jpg
+uv run scripts/evidence.py spec.json --out evidence.jpg      # satellite image + camera-position wedge + comparison panels
+```
+
+## 6. Historical imagery
+
+- Street view taken many years before the photo: go by old buildings and permanent structures; new buildings may not exist yet, and signs may have changed (v003: the street view was 10 years older; the comparison used buildings and poles).
+- New facilities (new schools, new factory buildings) aren't in old street view yet: first group by date and look at the newest capture; if it shows demolition, hoarding or tower cranes, that's ground evidence that "something was built here later", and it also gives the photo an earliest possible year.
+- Conversely, you can date the photo: find slowly changing things (extent of climbing-plant cover, tree crown size, hoarding, whether a new building has gone up), compare them across street view or satellite imagery from different years, and you can bracket it to within a year or two (v004).
+- Judge the season from the phenology in the photo, not from the month the reference street view was taken (v004's creator called it "winter" from the date of a December street view).
+
+## 7. When there are many candidate cities or candidate points
+
+- Make a candidate table: one row per candidate, one column per criterion, fill in "matches / doesn't match / can't tell", and in the last column write the reason for exclusion.
+- Look at candidate points one page at a time: `tiles.py sheet --points cands.json --zoom 18`; each cell is centered and numbered, more accurate than finding points in a large mosaic (reading pixels off a large mosaic displayed scaled down is off by 50–100 px).
+- Criteria use only things directly visible within the photo's field of view.
+- Go through all of them once before looking closely at what remains; don't stop at the first one that "looks like it".
+- When candidates come from OSM, first check each candidate area's data volume with `osm.py coverage`; an area with sparse data being absent from the candidate table doesn't mean it isn't the one — scan it separately with `tiles.py sheet --grid`.
+
+### Finding a sports field (common in top-down shots from windows)
+
+1. Read the sports-field template from the photo: the angle between the track's long axis and the camera direction (lying across the frame ≈ perpendicular to the camera direction), which side of the track the pitch and basketball courts are on, the shape of nearby buildings (L-shaped, enclosed square), adjacent open ground or slopes.
+2. The camera direction comes from the sun (`sun.py compass`; without a date, compute over the whole year) or from roads or rivers in the frame; if two headings can't be separated, use two templates.
+3. First look at the whole urban area in one z16 mosaic; bright new sports fields stand out at a glance; convert pixels to coordinates with `tiles.py px2ll`. When you need to find all fields, new and old, lay a grid over the candidate district's urban area: `tiles.py sheet --grid <urban area s,w,n,e> --zoom 17 --size 320 --cols 5` (one cell ≈ 330 m, 25 cells per page ≈ 1.5 km × 1.5 km), and look for red running tracks cell by cell (a track covered by building shadows shows only a section of arc).
+4. Compare matched fields to the template, then work back from the field toward the camera to find the building the camera is in (which side of the teaching building is visible, which road lies between, how large the depression angle is).
+5. Don't assume "track lying across the frame = long axis perpendicular to the sight line": see which end of the track's far edge is lower (closer); if it's slanted, it isn't perpendicular. After identifying ≥4 points (track curves, basketball court corners, building corners), solve heading and camera position with `pose.py solve`; don't compute by hand.
+
+## 8. Final check before concluding
+
+- [ ] Every "matched" and "measured" has a file actually produced in this session
+- [ ] The error radius comes from intersection geometry or multi-item comparison, not made-up decimal places
+- [ ] All four bearing self-check items passed
+- [ ] After finding an anchor, you didn't go back to generic features to pick another place
+- [ ] Category inference listed all candidates, with exclusion reasons written
+- [ ] Conflicts between hints, IP, EXIF and the conclusion are explained (the image wins)
+- [ ] The key step was redone with a different crop or keywords, with consistent results
+- [ ] If you couldn't pin a point, you wrote "the level it's determined to + what information is still missing"
+- [ ] Every exclusion reason was verified: exclusions by "X isn't in the image" had the frame and occlusion computed; unverified interpretations were used only for ranking
+- [ ] When the candidates are a few discrete ones, you chose a main answer, not a midpoint with a big circle
+
+
+---
+
+<a id="source-98c10f9234d2d105"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/_template/clues.md
+
+# <Country> clues
+
+Entries use the shared format (`references/clues/README.md`). Only clues whose "Points to" stays inside this country belong here; clues that tell countries apart go into `references/clues/global.md`.
+
+## <Topic, e.g. Text and plates>
+
+### <Clue name>
+- Look for: exactly what to find in the image and how to recognize it
+- Points to: state / city / type of area
+- Strength: strong / medium / weak (a single source is "(single source)")
+- Counterexamples: when it leads to a wrong call
+- Sources: links to official or reference material, or the case it came from
+
+
+---
+
+<a id="source-3555c0acb110d1a2"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/ca/clues.md
+
+# Canada clues
+
+Entries use the shared format (`references/clues/README.md`). Cross-country clues that lead here (driving side, plate shape, script) are in `references/clues/global.md`.
+
+## Clues
+
+### British Columbia, Canada plates
+- Look for: blue characters on white, "two letters, one digit + small provincial flag in the middle + two digits, one letter"
+- Points to: BC
+- Strength: strong (when both the format and the provincial flag are clearly visible)
+- Counterexamples: out-of-province cars are common in Vancouver; older formats differ
+- Sources: v009
+
+### Residential streets with dark green streetlight poles + a grass strip outside the sidewalk
+- Look for: on residential streets, streetlight poles painted dark green with curved-arm lamp heads; a grass strip separating sidewalk and roadway; shallow gutters
+- Points to: residential areas of Vancouver and Metro Vancouver (use together with plates)
+- Strength: weak
+- Counterexamples: residential areas in the US Northwest (around Seattle and Portland) look very similar; grass strips are very common in North American suburbs
+- Sources: v009
+
+
+---
+
+<a id="source-352885a9a98da8b6"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/cn/clues.md
+
+# Mainland China clues
+
+Entries use the shared format (`references/clues/README.md`); lookups: `clues.py lookup plate|area-code|admin --country cn`. Ordered by the layers in `references/observe.md`: platform metadata → text and plates → vehicles and traffic → infrastructure → climate and phenology → terrain and water → urban form.
+
+## Platform and metadata (all of it is a hypothesis to verify)
+
+### IP location label on comments/posts
+- Look for: the province shown next to comments and posts on Douyin, Xiaohongshu, and Weibo (a country for users abroad), together with the posting date
+- Points to: which province the poster was in at the moment of posting, not where the photo is
+- Strength: weak; raise to medium when the stated story is "shot today, posted today" and the watermark time matches the posting time
+- Counterexamples: posting while traveling, old photos, going online through a proxy (v006: the photo was in a province neighboring the IP province); the puzzle setter's "not in X" is itself a hypothesis to verify. When it conflicts with the image, keep "matching areas in this province + neighboring provinces"; don't exclude a whole province
+- Sources: v004 v006 v010 v011
+
+### Photo timestamp watermark / EXIF time
+- Look for: a date-time watermark in a corner of the frame; DateTimeOriginal as read by `exif.py`
+- Points to: month and time of capture → phenology judgments, sun calculations
+- Strength: medium (the watermark can be wrong because of camera settings; EXIF can be edited)
+- Counterexamples: rephotographed images, metadata stripped after reposting; camera time zone not set
+- Sources: v006 v010-3
+
+## Text and plates
+
+### Shop signs, street signs, organization names
+- Look for: place names on shop signs, company plaques, and street-name signs; search the original text
+- Points to: province / city / street
+- Strength: street-name signs and organization names strong; place names in shop signs medium (chain stores and out-of-town companies mislead)
+- Counterexamples: chain brands; shops named after somewhere else ("重庆火锅" Chongqing hotpot, "沙县小吃" Shaxian snacks)
+- Sources: general; case001
+
+### Issuing authority at the bottom of signs
+- Look for: small print in the corner of traffic signs, prohibition signs, public notices, and construction signs: 〇〇市公安局交警支队 (〇〇 city public security bureau, traffic police detachment), 〇〇区城管 (〇〇 district urban management), 〇〇街道办 (〇〇 subdistrict office)
+- Points to: city, district (county); often names the admin division directly
+- Strength: medium (if legible, it reaches the district; the name of an agency with cross-district jurisdiction is not the district you are in)
+- Counterexamples: blurry small print is easy to misread; it needs a second instance to confirm
+- Sources: v003 (the same technique used abroad; applies equally to signs in China)
+
+### Landline area codes
+- Look for: landline numbers on signs, ads, and construction notices (mobile numbers don't map to a region)
+- Points to: roughly blocked by first digit: 010 Beijing, 02X municipalities and megacities (020 Guangzhou, 021 Shanghai, 022 Tianjin, 023 Chongqing, 024 Shenyang, 025 Nanjing, 027 Wuhan, 028 Chengdu, 029 Xi'an); 03 North China and the Central Plains (Hebei, Shanxi, Henan); 04 Northeast and Inner Mongolia; 05 East China (Jiangsu, Shandong, Anhui, Zhejiang, Fujian); 07 Central and South China (Hubei, Hunan, Guangdong, Guangxi, Jiangxi); 08 Southwest (Sichuan, Guizhou, Yunnan, Tibet); 09 Northwest (Shaanxi, Gansu, Ningxia, Qinghai, Xinjiang). Look up the full area code in the table to get the prefecture-level city
+- Strength: medium (a full area code reaches the city)
+- Counterexamples: first judge how many digits the area code has from the digit grouping; 400/800 numbers and mobile numbers don't map to a region; a company headquarters number may be in another city; a few area-code blocks have exceptions (e.g., codes starting with 06 belong to parts of Shandong, Guangdong, and Yunnan); the lookup table is authoritative
+- Sources: v003 (method); the block pattern is general knowledge, check the table before citing it
+
+### License plates
+- Look for: the first Chinese character is the provincial abbreviation, the second-position letter is the prefecture-level city code (A is usually the provincial capital; exceptions: Qingdao 鲁B, Shenzhen 粤B, Dalian 辽B, Xiamen 闽D, etc.; check the table); background color: blue for small vehicles, yellow for large vehicles, gradient green for new-energy small vehicles, yellow-green for new-energy large vehicles, black for foreign-related vehicles and Hong Kong/Macau cross-border vehicles (粤Z)
+- Points to: province / prefecture-level city
+- Strength: strong when several vehicles on the street agree; a single vehicle, or vehicles in parking lots, scenic areas, at hotel entrances, or in expressway service areas, count only as weak
+- Counterexamples: out-of-town vehicles are common in big cities and tourist areas; freight corridors carry plates from everywhere; illegible out-of-town plates in hotel or scenic-area parking lots can't be used to place the location
+- Sources: case001 v011
+
+## Vehicles and traffic
+
+### Taxi colors
+- Look for: main body color (green, yellow, blue-and-white, red, etc.) and color scheme
+- Points to: a city-level candidate list (e.g., green-family taxis are common in several Sichuan cities; look up the exact list live, it changes over the years)
+- Strength: weak (single source); medium when combined with bus livery and terrain
+- Counterexamples: one city often runs several colors at once, and they change generations often; Chongqing, Xi'an, Changzhi, and other places also have green-family taxis; ride-hailing cars don't count
+- Sources: v006
+
+### Bus roof and body livery (clear in top-down shots)
+- Look for: bus roof color, main body color, waistline stripe, rear-end pattern (zoomed top-down shots often leave only color blocks, which is still enough)
+- Points to: a fingerprint to compare city by city (first narrow down to a few cities with taxis etc., then separate them by bus livery); **inside a municipality or a large prefecture-level city it can separate districts (counties)**: the urban core and outlying districts/counties have different bus companies, with very different liveries
+- How to check: first confirm the common livery in the urban core; if it doesn't match, search images for "<城市> <颜色描述> 公交" (query in Chinese: <city> <color description> bus), and take the district/county name from route signs and company names in the result images (pin it to a district/county before using it); finally compare bus photos from the candidate districts/counties one by one on rear end and waistline
+- Strength: medium (two sources, v006 and v014; can narrow a whole city down to one or two districts/counties); strong when route signs or company names are visible
+- Counterexamples: several liveries coexist in one city and change generations often; ad wraps cover the base colors; buses on cross-district routes run into other districts; not appearing in the first few pages of image results doesn't mean it doesn't exist
+- Sources: v006 v014
+
+## Infrastructure
+
+### Electrified railway catenary masts: one side or both
+- Look for: a row of poles beside the railway with triangular cantilever arms at the top, holding two or three non-parallel wires (messenger wire, contact wire). Only on one side of the track → usually single-track; on both sides, or with portal frames spanning the tracks → double-track
+- Points to: an electrified railway; single-track electrified lines are a small share, so this can narrow down a lot (combine with regional clues, then list candidate lines with `osm.py` or a railway map)
+- Strength: medium
+- Counterexamples: seen from far away or from low down, masts on the other side may be hidden by trees or embankments; stations, bridges, and tunnels have different structures; "single-track = old line" does not hold
+- Sources: v011
+
+### Number of bundled conductors on transmission lines
+- Look for: how many conductors form one bundle per phase under the tower crossarm (with spacers between them)
+- Points to: voltage level. Common: single conductor ≈ below 220 kV, 2 → 220–330 kV, 4 → 500 kV, 6 → 750 kV or ±800 kV DC, 8 → 1000 kV
+- Strength: weak (alone it only tells the grid level); medium after intersecting with railways, rivers, expressways
+- Counterexamples: special designs; the count is easy to get wrong at a distance; several circuits in one corridor overlap
+- Sources: v011 v010-3
+
+### Combinations of special urban transport facilities
+- Look for: cross-river passenger cableways (two or three closely parallel track ropes + a haul rope, slanting from a riverside station to the opposite bank), road/rail-transit bridges (double-deck truss, rail transit on the lower deck), light rail running through a building, long urban escalators, high-speed rail viaducts
+- Points to: each facility maps to a set of cities; when two or three appear together, take the intersection (with a cross-river passenger cableway, a road/rail-transit bridge, and steep riverside mountains in one frame, usually only one or two mountain river cities nationwide remain); verify each item of the intersection with web search, not from memory
+- Strength: medium (combined, it can reach the city)
+- Counterexamples: high-voltage lines crossing a river (tall towers, insulators, nearly horizontal), cable-stayed bridge stays (fanning from the tower top), and dock crane cables get mistaken for cableways; road/railway bridges in Wuhan, Nanjing, and elsewhere are structurally similar but differ in color and terrain
+- Sources: v005 v010-3
+
+### Hu Hu Tong (户户通) small satellite dishes
+- Look for: small dishes 35–60 cm in diameter on rooftops in rural areas and urban villages
+- Points to: the heading corresponds to longitude: in eastern cities they face southwest (about 215°–227°), in the west they face south or southeast (table in `sky.md` section 5)
+- Strength: medium (when the azimuth is read accurately it can bound the longitude range)
+- Counterexamples: large dishes at institutions and cable TV stations point at other satellites; on offset-feed dishes the dish-face tilt is not the elevation angle
+- Sources: derived in sky.md; v001 (using dishes as a compass)
+
+## Climate and phenology (must be paired with the month)
+
+### Extensive evergreen broadleaf trees in winter photos
+- Look for: in photos from December–February, whether street trees, green belts, and hillsides at the city edge are broadly green (camphor, glossy privet, osmanthus, banyan and the like)
+- Points to: the subtropical evergreen broadleaf forest zone, roughly south of the Qinling–Huaihe line
+- Strength: medium with a reliable month (excludes half of China); weak without a month
+- Counterexamples: northern cities also have evergreen plantings such as pines, cypresses, and Japanese spindle (mostly conifers or shrubs); **the parts of northern provinces south of the Qinling are also evergreen in winter: Longnan in Gansu, Hanzhong and Ankang in Shaanxi**; high-altitude mountains in the south lose their leaves and hold snow in winter
+- Sources: v006
+
+### Color of mountains in winter (distant views, aerial)
+- Look for: in winter distant views or high-altitude photos, whether the mountains are uniformly gray-brown and bare or broadly green
+- Points to: gray-brown → temperate mountains north of the Qinling–Huaihe line; evergreen → southern subtropical mountains
+- Strength: medium (separates north from south; can't reach the province)
+- Counterexamples: conifer forest areas such as the northern Greater Khingan and the Changbai Mountains stay dark green in winter; the arid northwest is brown in every season; high altitudes in the south also turn withered yellow in winter; doesn't apply to summer photos
+- Sources: v012 v006
+
+### White water bodies seen from altitude
+- Look for: in aerial or airplane-window photos, water surfaces that are uniformly white with no reflection
+- Points to: ice or snow on ice → regions where the daily mean temperature stays below 0 ℃ for long stretches in winter, roughly north of the Qinling–Huaihe line
+- Strength: weak (pair with season and mountain color)
+- Counterexamples: salt lakes, salt pans, dry lakebeds, turbid sediment-laden water, sun glint, thin cloud; during cold waves in the south, small water bodies also freeze briefly
+- Sources: v012
+
+### Palms, coconut trees → "tropical China"
+- Look for: rows of coconut palms, palm-family plants, tropical landscaping
+- Points to: you must list every candidate: Hainan, southern Guangdong (Leizhou Peninsula), southern Guangxi, **southern Yunnan (river valleys in Xishuangbanna, Dehong, Honghe, etc.)**, southern Taiwan; beyond that, Southeast Asia
+- Strength: weak (only draws the candidate set)
+- Counterexamples: parks in Fujian, Sichuan, Shanghai, and elsewhere also plant palms; in v010-6 the AI searched only Hainan and Guangdong, missed Yunnan, and ended up jumping to Vietnam
+- Sources: v010-6 v002
+
+### Weeping willows + calm artificial water, no other features
+- Look for: weeping willows, mixed trees, water that looks like an irrigation canal or fish pond; no mountains, towers, road signs, or buildings
+- Points to: mainly provinces of the Huang-Huai-Hai Plain (Henan, Hebei, Shandong, Anhui, Jiangsu)
+- Strength: weak (only reaches a few provinces; photos like this can usually only give a range)
+- Counterexamples: the Yangtze basin and irrigated oases in the northwest also commonly have weeping willows and canals
+- Sources: v010-8
+
+### Fog, low cloud
+- Look for: low visibility, a gray-white sky, distant mountains reduced to outlines
+- Points to: common in Sichuan Basin cities (Chongqing etc.) in the winter half of the year
+- Strength: weak (only boosts; doesn't fix the city, let alone the solar term)
+- Counterexamples: smoggy winter days in North China and the Yangtze River Delta look the same; phone filters and backlighting also make things gray
+- Sources: v005
+
+## Terrain and water
+
+### Mountains rising straight from the far bank of a big river, buildings stacked up the slopes
+- Look for: a very wide river with mountains several hundred meters high within one or two km of the far bank; houses climb the slope tier by tier
+- Points to: mountain river cities (central Chongqing, Yibin, Luzhou, and other Sichuan–Chongqing and upper-Yangtze cities); excludes plains cities on the middle and lower Yangtze (Wuhan, Jiujiang, Nanjing, Wuhu)
+- Strength: weak (excludes a large area; doesn't fix the city)
+- Counterexamples: Yichang and other cities also have nearby mountains across the river; fog "pulls" distant mountains closer, so check whether the mountain foot meets the built-up area directly
+- Sources: v005
+
+### Mountain city at the confluence of two rivers
+- Look for: the urban area straddles the confluence of two rivers, surrounded by mountains
+- Points to: a common layout in Sichuan–Chongqing and the southwest (Chongqing, Yibin, Luzhou, etc.); separate specific cities by confluence angle, river islands, bridge positions, and river width (template comparison in `corridors.md` section 6)
+- Strength: weak (common layout)
+- Counterexamples: river islands and shorelines change with water level and construction; mind the date of the satellite imagery
+- Sources: v006
+
+### Wide, muddy yellow river + low, dense, fragmented gullies
+- Look for: a river several hundred meters wide, earthy yellow; the hills on both banks are low but cut by gullies into branching patterns, sparse vegetation, terraces on the slopes
+- Points to: the Loess Plateau reach of the middle Yellow River (around the Shanxi–Shaanxi Gorge) and its tributaries in northern Shaanxi, western Shanxi, and eastern Gansu
+- Strength: medium (reaches Loess Plateau + Yellow River; pair with the river's direction and the terrain on both banks to get the reach)
+- Counterexamples: in flood season the Yangtze and the Jinsha are also yellow, but their banks are plains and high mountain gorges respectively; tributaries such as the Wuding and Yan rivers are just as muddy but much narrower
+- Sources: v008
+
+### Blue-green Yellow River surface in a canyon
+- Look for: a wide river surface, clear blue-green with no visible sediment, in a loess or red sandstone canyon
+- Points to: reservoir areas of the cascade dams on the upper Yellow River (Liujiaxia, Yanguoxia, Bapanxia in Gansu; Lijiaxia in Qinghai; Qingtongxia in Ningxia; etc.)
+- Strength: weak (only reaches the "upper-river reservoir" class of reach)
+- Counterexamples: season, light, and drone filters all change the water color; in v010-2 the AI used this clue to pick the most famous reservoir and was off by 7 km
+- Sources: v010-2
+
+## To be filled: street-level fingerprints between similar cities
+
+For several cities with similar layouts in the same basin or the same province, street-level distinguishing clues haven't been collected yet (guardrail color and style, bus shelters, curbs, traffic sign poles, streetlight design, residential facade colors). Until the library has them, when "several cities all look alike", sample and compare on the spot:
+
+```bash
+uv run scripts/baidu_pano.py sample --bbox <city A urban area s,w,n,e> --n 24 --out cityA.jpg
+uv run scripts/baidu_pano.py sample --bbox <city B urban area s,w,n,e> --n 24 --out cityB.jpg
+```
+
+- Compare only things the city procures uniformly and that are consistent citywide (guardrails, shelters, sign poles); don't compare shop signs, trees, or cars.
+- Baidu street view was mostly captured several years ago, and fixtures like guardrails get replaced; when the sample year and the photo year are far apart, drop one tier.
+- A difference found by sampling must hold across three or more cities and two or more independent samples before it can be written into this section.
+
+## Urban form
+
+### No office clusters or supertall towers in the skyline
+- Look for: the frame is all residential high-rises, with no glass-curtain-wall office clusters or supertall landmarks
+- Points to: the old town of a prefecture-level city, or a county seat; not the core of a provincial capital
+- Strength: weak
+- Counterexamples: old districts of provincial capitals and suburban counties look like this too; the photo covers only one direction; the photographer may be standing on the tallest building in town
+- Sources: v006
+
+### Tile-clad factory buildings + rows of AC units, right next to new supertall towers (Pearl River Delta)
+- Look for: six- to eight-story factory buildings clad in small square beige or yellow-green tiles, windows lined with AC outdoor units; new glass-curtain-wall towers beside or behind them
+- Points to: "industrial-zone redevelopment" areas in Shenzhen, Dongguan, and similar places, where the old factories aren't demolished yet but new towers have gone up around them
+- Strength: weak (suggests the Pearl River Delta; can't fix the city on its own)
+- Counterexamples: old industrial areas in the Yangtze River Delta such as Suzhou and Ningbo also have similar factory buildings; tile color and AC unit density usually differ
+- Sources: case001
+
+
+---
+
+<a id="source-3d2bb948ddc02ef2"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/cn/search.md
+
+# Searching for places in mainland China
+
+Region-specific half of `references/search.md`: which Chinese platforms to search and how to phrase queries. The general method (variants, engines, vote counting, after a hit) stays in `references/search.md`.
+
+## Chinese keyword search
+
+General web search tools are often ineffective for Chinese content inside China. Use the script:
+
+```bash
+uv run scripts/revimg.py --query "蓝色拱形顶棚 人行天桥 高架" --query "<city> 出租车 颜色" --out-dir q/
+```
+
+(Queries in Chinese: "blue arched canopy, pedestrian bridge, elevated road"; "<city> taxi color".)
+
+Bing China gives web results (title + link); Baidu Images and Sogou Images give result-page screenshots (look at photos of similar scenes). For long descriptive queries ("楼顶操场 学校" rooftop playground school, "黄色公交" yellow bus) Bing mostly returns travel-guide pages; look directly at the Baidu Images screenshot. Baidu web search pops up a verification challenge, so it isn't done.
+
+## Where to search by object type (China)
+
+| Object | Where to search | Source |
+|---|---|---|
+| Scenic-area buildings, viral check-in spots | Douyin, Xiaohongshu, Weibo keyword and image search; official scenic-area accounts post videos from the same angle | v010-2, v009 |
+| Statues, small park features | User photos in Ctrip reviews | v010-6 |
+| New residential developments, commercial complexes | Housing-development albums on property sites (Anjuke, Fang.com, Loupan.com, etc.): the "周边配套" (nearby amenities) and "实景图" (real photos) sections; page all the way to the signboard | v010-5 |
+| Old buildings, historic sites | Local culture-and-tourism and protected-heritage-site pages; Visual China Group captions carry place names and years | v004 |
+| Ordinary streets, when even the city isn't fixed | Sample one page of arterial-road street view per candidate city and compare municipal fixtures (`baidu_pano.py sample`) | — |
+| Vehicle livery (bus, taxi, school bus) | `revimg.py --query "<city> <color description> 公交"` (query in Chinese: <city> <color description> bus), and read route signs and company names from the result images; first resolve any place name you read to a district (county) with `poi.py` before using it; don't treat a vehicle from district A as a clue for district B | v014 |
+
+## Social media
+
+- Viral scenery: search `<city> + <scenery>` on Douyin, Xiaohongshu and Weibo, in both Chinese and English.
+- Locals' photos of the same mountains or the same river: look in the candidate township's "同城" (local) feed or its place page (the v010-1 creator spoofed the device location to the candidate township to browse local content).
+- IP location labels on posts and comments are covered in `clues.md` (Platform and metadata).
+
+
+---
+
+<a id="source-4f0cc03adf07e5f0"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/il/clues.md
+
+# Israel clues
+
+Entries use the shared format (`references/clues/README.md`). Clues that tell Israel apart from its neighbours belong in `references/clues/global.md`.
+
+## Text and numbers
+
+### Landline area code
+- Look for: a fixed-line number on a shop sign or vehicle: `0X-XXX-XXXX` with X = 2, 3, 4, 8 or 9
+- Points to: 02 Jerusalem area; 03 Tel Aviv and Gush Dan; 04 Haifa and the north; 08 the Shephelah and the south; 09 the Sharon → `clues.py lookup area-code <number> --country il`
+- Strength: weak (five codes for the whole country; each covers several districts)
+- Counterexamples: `05x` is mobile and `07x` is VoIP, both used nationwide; `1-700`/`1-800` business numbers; the same digits are used in the West Bank and Gaza under +970
+- Sources: en.wikipedia "Telephone numbers in Israel", section "Geographic area codes", https://en.wikipedia.org/wiki/Telephone_numbers_in_Israel
+
+## Roads
+
+### Road number: digit count, parity and size
+- Look for: the route number on a road sign or route shield
+- Points to: digit count gives the class (1 national, 2 inter-city, 3 regional, 4 local). Even numbers run south–north, odd numbers west–east. Among roads with the same number of digits, numbers rise from south to north (west–east roads) and from west to east (south–north roads): 1x roads are in the far south, 9x roads in the far north-east. Pick the band, then `osm.py route` along that road
+- Strength: medium (two sources)
+- Counterexamples: there are exceptions (Highway 1 lies mostly north of Highway 3); roads in the West Bank and Golan Heights use the same scheme
+- Sources: en.wikipedia "Roads in Israel", section "Numbering of the roads", https://en.wikipedia.org/wiki/Roads_in_Israel; he.wikipedia "כבישי ישראל" (even = south–north, odd = west–east, numbers rise northward and eastward), https://he.wikipedia.org/wiki/כבישי_ישראל
+
+
+---
+
+<a id="source-51f07e04d0690b58"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/jp/clues.md
+
+# Japan clues
+
+Entries use the shared format (`references/clues/README.md`). Cross-country clues that lead here (driving side, plate shape, script) are in `references/clues/global.md`.
+
+## Clues
+
+### Railway company names on level-crossing and station signs
+- Look for: the company name printed on round "踏切 とまれ" (level crossing, stop) signs, warning signs, and crossing equipment boxes
+- Points to: operating area. JR passenger service is split among six companies, each with its own territory (JR西日本 (JR West) = Kinki, the Chūgoku region, part of Hokuriku); private railway names can often pin the line directly
+- Strength: medium (JR to the broad region, private railways to the line)
+- Counterexamples: near company boundaries; old signs not replaced after a line was handed over to a third-party operator
+- Sources: v003
+
+### Telephone area codes (市外局番)
+- Look for: TEL numbers on signs, construction notices, warning signs, vending machines
+- Points to: the first digit after the 0 runs roughly north to south (01 Hokkaido … 09 Kyushu and Okinawa); look up the full area code in a table to get the city (e.g., 03 = Tokyo's 23 wards)
+- Strength: medium
+- Counterexamples: area codes vary from 2 to 5 digits; when only part of the number is visible, judge the length from the digit grouping; 0120, 0570, 050, 080, 090 don't map to a region
+- Sources: v003
+
+### Four parallel tracks at one level crossing
+- Look for: the number of parallel tracks across the crossing, whether there is overhead catenary
+- Points to: a quadruple-track section of a trunk line; adding conditions like "right on the coast" can narrow it to a few km (`osm.py crossings --kind level_crossing` estimates the track count from the node count)
+- Strength: medium
+- Counterexamples: station throats and two companies' lines running side by side also show 4 tracks; urban quadruple-track sections are mostly grade-separated, so places with level crossings are actually rare
+- Sources: v003
+
+### Issuing authority at the bottom of signs
+- Look for: "〇〇警察署" (police station), "〇〇土木事務所" (civil engineering office), "〇〇区役所" (ward office) at the bottom of regulatory signs, construction signs, and notice boards
+- Points to: ward, city
+- Strength: medium
+- Counterexamples: the name of a prefectural or cross-ward agency is not the ward you are in
+- Sources: v003
+
+
+---
+
+<a id="source-7d7b2508c146c537"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/lk/clues.md
+
+# Sri Lanka clues
+
+Entries use the shared format (`references/clues/README.md`). Cross-country clues that lead here (Sinhala script, driving side) are in `references/clues/global.md`.
+
+## Text and plates
+
+### Province code on number plates
+- Look for: two small Latin letters below the emblem on the left side of the plate, before the main registration (e.g. `WP CAB-1234`). Codes: WP Western, CP Central, SP Southern, NP Northern, EP Eastern, NW North Western, NC North Central, UP Uva, SG Sabaragamuwa
+- Points to: the province where the vehicle was **registered**, not where the photo was taken
+- Strength: weak for the photo location (registration province only; Western Province cars are common across the island)
+- Counterexamples: vehicles travel and are sold across provinces, and existing plates often keep their code even after a sale; plates in the older format (e.g. `ශ්‍රී` between the numbers) have no code; the code is being removed from new plates (announced for new registrations and ownership transfers from 1 January 2023; gazette No. 2352/29 of 5 October 2023; a 2024 report still describes the full removal as planned from 1 January 2025; a 2026 report says the codes "have now been removed"), so the actual cutover was gradual and a plate without a code says little about its age
+- Sources: Wikipedia "Vehicle registration plates of Sri Lanka" (format, codes, position), https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_Sri_Lanka; Ada Derana 2022-12-30 (Commissioner General of Motor Traffic: removal from 1 January 2023), https://www.adaderana.lk/news/87222/provincial-letters-to-be-removed-from-number-plates-; Sunday Observer 2024-05-05 (gazette 2352/29, requirement dropped from 1 January 2025), https://www.sundayobserver.lk/2024/05/05/news-features/22447/why-the-province-is-being-dropped-from-number-plates; Ada Derana 2026-04-23 (identifiers removed), https://www.adaderana.lk/news/121629/standard-vehicle-number-plates-to-be-issued-from-late-may
+
+
+---
+
+<a id="source-99b39e2d40440fea"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/mm/clues.md
+
+# Myanmar clues
+
+Entries use the shared format (`references/clues/README.md`). Cross-country clues that lead here (driving side, plate shape, script) are in `references/clues/global.md`.
+
+## Clues
+
+### Region/state codes on Myanmar plates
+- Look for: a Latin-letter abbreviation on the plate (e.g., YGN) plus a number
+- Points to: Myanmar; YGN = Yangon Region
+- Strength: medium (single source)
+- Counterexamples: vehicles from other regions; old plates from before 2013 are in Burmese script
+- Sources: v007
+
+
+---
+
+<a id="source-ac2c92780ef76bdf"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/mx/clues.md
+
+# Mexico clues
+
+Entries use the shared format (`references/clues/README.md`). Cross-country clues that lead here (driving side, plate shape, script) are in `references/clues/global.md`.
+
+## Clues
+
+### Plate background color (usable even when blurry)
+- Look for: the overall background color and graphic placement of the rear plate; no need to read the characters
+- Points to: state level. Per the reference chart used in the video, nearly pure white plates are Mexico City and Nuevo León; most other states carry prominent colored graphics or color bands
+- Strength: medium (single source)
+- Counterexamples: vehicles from other states; states change plate designs; federal plates are a separate system; overexposure
+- Sources: v002
+
+### Tall single tubular steel transmission poles along roads
+- Look for: a gray single tubular steel pole with three tiers of curved crossarms on one side and long insulator strings; the shorter poles beside it carry distribution lines
+- Points to: a high-voltage transmission corridor; check OpenInfraMap for which roads lines of this voltage follow in that city, and use that to filter road segments within the city
+- Strength: weak (can't fix the city)
+- Counterexamples: different voltages look similar; OSM power data may be missing lines or lack voltage tags
+- Sources: v002
+
+
+---
+
+<a id="source-c810a61e1032c357"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/tr/clues.md
+
+# Turkey clues
+
+Entries use the shared format (`references/clues/README.md`). Clues that tell Turkey apart from other countries belong in `references/clues/global.md`.
+
+## Text and numbers
+
+### Province code at the start of a civil number plate
+- Look for: the two digits before the letters on a white civil plate (`34 ABC 123`, `06 AB 1234`); the blue band on the left reads `TR`
+- Points to: the province where the vehicle was **registered** → `clues.py lookup plate <digits> --country tr` or `board.py apply --kind plate --value <digits>`
+- Strength: weak for where the photo was taken; medium when most parked cars in a quiet residential street share one code
+- Counterexamples: rental and fleet cars are often registered in 34 İstanbul, 06 Ankara, 07 Antalya or 35 İzmir and driven anywhere; holiday traffic carries plates far from home; 33, 46 and 63 date from the old names İçel, Maraş and Urfa; some owners cover the blue band with a red sticker
+- Sources: tr.wikipedia "Türkiye taşıt plaka kodu" (codes, 1962 alphabetical order, 68–81 for later provinces), https://tr.wikipedia.org/wiki/Türkiye_taşıt_plaka_kodu; tr.wikipedia "Türkiye'nin illeri" (code per province), https://tr.wikipedia.org/wiki/Türkiye'nin_illeri
+
+### Letter group of an older plate → district tax office
+- Look for: on plates issued before sequential allocation, the first letter(s) after the province code (Ankara `06 P..` Polatlı, `06 N..` Nallıhan; Edirne `22 K..` Havsa, `22 L..` Uzunköprü, `22 F..` Keşan)
+- Points to: the district (ilçe) tax office where the vehicle was registered
+- Strength: weak (single source)
+- Counterexamples: in recent years every province hands out `AAA 999` to `ZZZ 999` in sequence, so new plates say nothing about the district; the letter scheme differs per province and is not published as one table; school and staff-shuttle plates use reserved letters
+- Sources: tr.wikipedia "Türkiye taşıt plaka kodu", section "Plaka türleri", https://tr.wikipedia.org/wiki/Türkiye_taşıt_plaka_kodu
+
+### Landline area code on shop signs and vehicles
+- Look for: a fixed-line number on a shop sign, awning, delivery van or banner: `0 (2xx)`, `0 (3xx)` or `0 (4xx)` followed by seven digits
+- Points to: the province of that landline → `clues.py lookup area-code <number> --country tr`; in İstanbul, 212 is the European side and 216 the Asian side
+- Strength: medium (a shop's own landline is usually local; a single source of the code list is enough here because two tables agree)
+- Counterexamples: `0850`, `0800` and `444 xx xx` are nationwide numbers; `05xx` numbers are mobile; a chain's sign can show its head-office number; `0392` is Northern Cyprus, which is dialled through +90 but is not a Turkish province; old numbers survive on faded signs after a business moves
+- Sources: tr.wikipedia "Türkiye'nin illeri" (telephone code column), https://tr.wikipedia.org/wiki/Türkiye'nin_illeri; en.wikipedia "Telephone numbers in Turkey" (212/216 split, full table), https://en.wikipedia.org/wiki/Telephone_numbers_in_Turkey
+
+## Roads
+
+### Provincial road number = plate code + two digits
+- Look for: a road number in the form `NN-NN` on a route marker or kilometre post (`34-03`, `04-28`)
+- Points to: the first two digits are the province's plate code → `clues.py lookup plate <first two digits> --country tr`; the road is a secondary road maintained by that province's highways division
+- Strength: medium (single source)
+- Counterexamples: a sign at a junction can name a road that starts in the next province; misreading a state road `D 300` as a provincial number
+- Sources: tr.wikipedia "Türkiye'deki il yolları listesi" (every listed road starts with its province's plate code), https://tr.wikipedia.org/wiki/Türkiye'deki_il_yolları_listesi
+
+### State road numbers: first digit → direction and band
+- Look for: a state road number `D 010` … `D 990` on route markers and kilometre posts
+- Points to: `D 0xx`–`D 4xx` run west–east and are numbered from north to south (`D 010` along the Black Sea coast, `D 400` along the south); `D 5xx`–`D 9xx` run north–south and are numbered from west to east. Use the number to pick a latitude band (west–east roads) or a longitude band (north–south roads), then `osm.py route` or `osm.py along` on that road
+- Strength: medium (single source)
+- Counterexamples: branch roads (`D 014`, `D 052`) are short spurs that may lie away from the main road's band; overlapping routes share a carriageway and only one number may be signed
+- Sources: tr.wikipedia "Türkiye'deki devlet yolları listesi", section "Yolların numaralandırılması", https://tr.wikipedia.org/wiki/Türkiye'deki_devlet_yolları_listesi
+
+## Landscape and crops
+
+### Tea gardens on steep slopes
+- Look for: low, clipped, dark-green bushes in tight rows covering steep hillsides, often with small houses scattered between them
+- Points to: the eastern Black Sea coast, Rize above all, with Artvin, Trabzon and Giresun
+- Strength: weak by default, as for any vegetation without a month; medium when the month is known and the bushes show the clipped, flat-topped rows of a harvested plantation (Turkey's tea is grown almost only here)
+- Counterexamples: clipped hedges and boxwood plantings in gardens and parks; Georgia's Adjara coast across the border has the same landscape
+- Sources: en.wikipedia "Tea in Turkey" (Rize as the main region since the mid-20th century), https://en.wikipedia.org/wiki/Tea_in_Turkey; en.wikipedia "Rize Province", https://en.wikipedia.org/wiki/Rize_Province
+
+### Hazelnut orchards
+- Look for: multi-stemmed bushy trees 3–5 m high in irregular clumps on slopes, the ground underneath bare or grassy; nuts in green husks in late summer
+- Points to: the Black Sea region between Artvin and Kocaeli; most production is in Ordu, Giresun and Samsun, with Sakarya and Düzce in the west
+- Strength: weak (needs the month, and a second clue)
+- Counterexamples: hazel grows wild and in gardens elsewhere; from a distance the clumps look like any mixed scrub
+- Sources: tr.wikipedia "Türkiye'de fındık üretimi", https://tr.wikipedia.org/wiki/Türkiye'de_fındık_üretimi
+
+
+---
+
+<a id="source-d71085d8e2ae3a28"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/regions/us/clues.md
+
+# United States clues
+
+Entries use the shared format (`references/clues/README.md`). Cross-country clues that lead here (driving side, plate shape, script) are in `references/clues/global.md`.
+
+## Clues
+
+### US Interstate shields
+- Look for: the number on red-and-blue shield-shaped road signs
+- Points to: one specific Interstate; add a skyline landmark or an exit number to fix the segment and direction
+- Strength: strong (to one road)
+- Counterexamples: a highway with the same number runs through several states or areas; the sign is small and easy to miss (in v010-4 the human didn't see it, the AI did)
+- Sources: v010-4
+
+
+---
+
+<a id="source-61a7235a5ec17cfc"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/SKILL.md
+
+---
+name: geo-sleuth
+description: Geolocate or chronolocate a photo with tool-verified reasoning (where was this taken / when was it taken / photo geolocation / geo-guessing). Given one or more photos, intake.py does metadata, OCR and reverse image search (Baidu/Yandex) in one command; clues and candidates go on a candidate board (board.py) that ranks them and gives the next step; clues.py looks up calling codes, driving side, plates and area codes from region packs; for satellite and street view the machine ranks first and you look only at the top few (CLIP in sat_scan.py, DINOv2+SIFT in match.py); plus sun and shadow math, OSM Overpass and DEM skylines. Every conclusion is checked against real data; output is coordinates + error radius, evidence images and tiered confidence. Use when the user shares a photo and asks where was this taken / geolocate this / when was this taken / 这是哪 / 在哪拍的 / 帮我定位这张照片 / 网络迷踪 / 图寻 / 几点拍的.
+---
+
+# geo-sleuth (v2)
+
+Goal: find a location that **holds up under checking**. Every conclusion must point to the clue it used, the command it ran and the file it produced.
+
+> `${CLAUDE_SKILL_DIR}` in commands means the directory containing this SKILL.md (the same for commands in references). Claude Code substitutes it automatically; in other agents, first `export CLAUDE_SKILL_DIR=<absolute path of this directory>` before running (if the shell doesn't keep variables between commands, prefix every command with it), or replace it with that path directly.
+
+The work is split into three layers. Remember this first, then read the flow:
+
+| Layer | Who | Tools |
+|---|---|---|
+| Decision: which candidates exist, how evidence is scored, whether a candidate can be excluded, what to scan next | **Script** (candidate board) | `board.py` |
+| Perception: reading text, table lookups, finding targets in satellite imagery, street-view matching | **Scripts compute and rank first; you look only at the top few** | `intake.py` `ocr.py` `clues.py` `sat_scan.py` `match.py` `geo.py bearings` |
+| Judgment: pulling clues out of the image, proposing hypotheses when the tables have nothing, deciding among the machine's top few | **You** | — |
+
+The method comes from breaking down 14 photo-geolocation (网络迷踪) creator videos and 22 puzzles, plus several rounds of blind-test comparisons; the breakdown notes are not published with the repo. The lesson of v1: rules written as prose don't get executed, and two runs of the same skill version gave very different results; so v2 puts every rule that can be written as code into `board.py`.
+
+## Hard rules (always in force; ★ = enforced by board.py, just follow it)
+
+0. If the user says the photo isn't theirs, or the image shows a private residence or minors, ask once what it's for before continuing; when the prompt already states the source or purpose (an evaluation puzzle, a puzzle setter's hint, the user says they took it), don't ask, and go to the finest level as usual.
+1. **Don't fabricate verification.** "Measured on the map", "matched street view", "±10 m" must correspond to commands actually run and files actually produced in this session. If you didn't run it, write "unverified".
+2. **Precision needs a source**: an error radius ≤100 m requires the intersection of two independent constraints, or a ground-level match on ≥3 invariant features. Before reporting a camera position, run a self-check: `pose.py project --horizon <sea-horizon row>` computes what the pitch should be and each feature's "expected row" for the current camera position; reconcile that with the photo (the depression angle to a target ≠ the camera's pitch; look up the camera position's elevation with `terrain.py elev` — if the height difference doesn't match the depression angles in the image, the camera position is wrong).
+3. **Once you have a unique anchor, close the loop**: all later search and geometry starts from the anchor; don't go back to generic features like "blue-green lake water" or "tropical park" and pick the most famous place of that kind.
+4. **Compute bearings first, then identify structures**: which block in satellite imagery is the tower or chimney in the photo is itself an interpretation. First compute its true bearing in the image with `sun.py compass` or a confirmed landmark, then use `geo.py bearings` to see which outline around the candidate camera position falls on that bearing; when nothing fits, first try both templates ("original/mirrored", "sunrise/sunset"); if not verified, only lower the tier, don't exclude.
+5. ★ **List the whole category before inferring**: when inferring a region from "hill city", "tropical", "IP in a municipality", use `board.py children` to add all subordinate admin divisions as candidates, then rank them with evidence. Don't default to the main urban district, don't pick by population.
+6. **Metadata and hints are hypotheses**: when EXIF, IP location, location tags or the puzzle setter's words conflict with the image, the image wins; don't invent a story to reconcile them. IP says country A but the hint or the regulation designs (plates, signs) point to another continent: intersect with `clues.py lookup territories <country A> --continent <continent>`.
+7. **Self-consistency**: redo each key judgment once with a different crop or keyword set; if the two results differ by tens of kilometers or more, lower the tier.
+8. ★ **If you can't pin a point, give a range + what information is missing**; when the candidates are a few discrete ones, don't take the midpoint: the main answer of `board.py report` is always the top-ranked candidate; the rest go into alternatives with discriminating tests.
+9. ★ **Exclusion and confirmation use the same standard**: `board.py exclude` only accepts read/computed clues + a computed file (output of `geo.py frame`, `terrain.py`, etc.); observed and inferred clues can only down-weight via `evidence --against`, with the likelihood ratio clamped to 1/3–3 (inferred) or 1/5–5 (observed). Generating candidates from "there's an X nearby" is also filtering, and X must be something confirmed in the image. Fine-level candidates such as campuses, residential compounds and street segments must go on the board too: add a batch at once with `board.py add --from <poi.py --out / osm.py geom output> --level area/road`, don't hand-pick; when you drop one, write `evidence --against` with a comparison image, and `check` lists candidates without a single piece of evidence (meaning nobody looked at them); a finer candidate goes under the one that contains it (a point under its street segment: `--parent`, or `board.py move`), so its support counts in that level's ranking, and `check` fails when it skips a level; labels from third-party data (tree species in a municipal inventory, an exact school-name match) can only down-weight, never justify exclusion (in two cases the ground truth was skipped by hand exactly this way). **The excluded extent must be ≤ the evidence extent**: for candidates with extent, such as districts, areas and roads, `exclude` needs `--covers lat,lon[:lat,lon]` stating which stretch the evidence covers; the script rejects coverage below half (excluding a whole road after looking at one point on it failed in two cases).
+10. ★ **Population and fame are not evidence**; scan order follows "share ÷ pages" (`board.py next`): finish the small districts first, put large districts last with a page cap.
+
+## Flow
+
+You don't have to go through every step: if reverse image search in step 1 hits directly, jump to steps 6 and 7 to confirm. Every step's output goes on the candidate board.
+
+### Step 1: steps 0–3 in one command
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/intake.py photo.jpg --out-dir intake/ [--box x0,y0,x1,y1 ...]
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py init --photo photo.jpg
+```
+
+`intake.py` usually takes 1–2 minutes, longer on the first run because it installs dependencies: give the command a generous timeout (10+ minutes) or run it in the background. If a command timeout interrupts it, the reverse-image-search subprocesses may still be writing into `rev/`, but `intake.md` won't be generated; don't treat it as finished.
+
+`intake.md` contains: metadata, OCR text (lines read from upscaled/tiled passes are marked pass=up/tile and are hypotheses), Baidu similar images (source-site counts + numbered contact sheet), reverse-image-search labels with tiered vote counts, likely residential compound/development names, the list of edge crops, and failed items. Then you do four things:
+
+- **Look at the image**: go through every crop in `edges/` (four edges, four corners); run through the checklist in `references/observe.md`; log each clue with `board.py clue "<text>" --kind <kind> --status observed|read|inferred|computed --file <zoomed crop>`. Be honest about status: text you read is read; "the building is probably 8 floors", "the road goes uphill" are inferred.
+- When a computed result actually tests an earlier clue, link it with `clue "<result>" --kind <kind> --status computed --file <output> --resolves K1` (repeat `--resolves` for multiple clues). An unrelated computation does not resolve a pending infrastructure clue; this link records the test, not support for a location.
+- **Lookup tables**: calling codes, driving side, overseas territories are global; plates, area codes and other country tables come from region packs → `clues.py lookup <kind> <value> [--country <cc>]` (without `--country`, every pack is searched and matches from several countries are all returned). For those that resolve to an admin division, use `board.py apply --kind plate --value <plate prefix> --file <zoomed crop>` directly (adds candidates and evidence automatically; the other candidates at the same level are only down-weighted, not excluded).
+- **Reverse-image-search results**: first open `rev/<name>_baidu_similar.jpg` (the top-left tile is the query image) and look for near-duplicates of the same object or the same scene; if there are any, go by number to `similar[i].from` in the JSON to see the source page; compound, development or hotel names in the labels → `poi.py "<name>" --city <city> --out pois.json` to get coordinates; for same-name hits (several campuses, several branches) put them all on the board with `board.py add --from pois.json --level area`, then check; always open the screenshots, and once a post hits, look through the rest of its photo set. Choose where to search by object type (`references/search.md`).
+- **Hints and metadata**: log each as an inferred clue and state how credible it is; IP location only says where the person was when posting, and the posting time is not the capture time.
+- **Country-specific material**: country-specific clues, tables, preferred services and tips are in region packs (`regions/<cc>/`). Once a country is a candidate, run `regions.py show <cc>`: it prints the pack's lookups, services and a one-line index of its clue entries with line numbers; read only the entries you need. When the country is settled, `board.py country <cc>`. `regions.py list` shows which packs exist; with no pack, use the global tools and `references/clues/global.md`.
+
+### Step 2: list all candidates, score evidence, check the next step
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py children <parent admin area>          # municipality → all districts; country → first-level admin divisions (gazetteer.py queries OSM, with bbox)
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py evidence --clue K1 --for <candidate A>:5 --for <candidate B>:2 --against <candidate C>:0.3 --why "…" --file <comparison image>
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py rank
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py next
+```
+
+`next` only ever says one of two things:
+- **Can't separate**: run discriminating tests from cheap to expensive, each one on all candidates at once — lookup tables → terrain (plain vs. hill city, `tiles.py fetch --zoom 13` or `terrain.py`) → vehicle livery (image search for "<city> <color> bus" in the local language; read route signs from the result images, compare the stripe along the bus rear by district) → street fixtures (street view per candidate built-up area) → river/road-network templates. Still can't separate after all of them: don't stop; scan in the "share ÷ pages" order it gives. `next` replaces these lines with the region pack's tips when the board's country is known.
+- **Ready to narrow**: first narrow the extent to the built-up area with `board.py urban <candidate>` (or give it by hand with `scan-bbox`), then write a falsification condition with `board.py falsify <candidate> --text "…"`, then go to step 3.
+
+The coarse environmental-location rules still apply: terrain before river width and building color; phenology must be paired with the month; take the intersection of rare facility combinations; recognizable species are only an exclusion tool; when all you have is a land type, first narrow to that type of land with a land-cover map (`references/clues/`).
+
+### Step 3: pick a branch to narrow down
+
+| What you have | Approach | Read |
+|---|---|---|
+| A unique anchor (building, statue, tower, scenic-area building) | Anchor geometry: sight-line intersection, alignment lines, tangent lines, filtering buildings by camera height | `geometry.md` |
+| Distant mountains, skyline | Render candidate camera positions with `terrain.py view` and compare; this fixes only one sight line, then find a second constraint. No EXIF: don't assume the main camera (distant mountains are often zoomed); a best focal on the edge of the searched range means widen and rerun. Near range in front of a far one: score both layers | `geometry.md` |
+| Clear shadows, lit faces, the sun in the frame | `sun.py locate / when / facing / compass`: latitude band, time, heading, true bearing of objects in the image | `sky.md` |
+| Route numbers, railway or power-line specs, a large river | Linear corridor + line-to-point: `osm.py route / crossings / along` | `corridors.md` |
+| Two or three kinds of infrastructure in one frame | `osm.py near --report`; crossings of two linear types `osm.py intersect` (bends are only annotated, not removed) | `corridors.md` |
+| Linear infrastructure + unrecognized mountains, no text | Compute horizons from elevation along the infrastructure and filter a whole region → score skyline + distance to infrastructure numerically → overlay the top 3–5 → fix the camera position from evenly spaced structures: `terrain.py scan --lines … --out hits.json --clusters-out clusters.json` → `terrain.py ridge photo.jpg --x0 … --x1 … --out ridge.json` → `terrain.py fit --hits hits.json --ridge ridge.json [--line … --line-dist …] --sheet top.jpg --photo photo.jpg` (for the fine search switch to `--at lat,lon --radius 800 --grid 100 --zoom 13`) → `imgprep.py piers photo.jpg --rows … --out cols.json --sheet piers.jpg` → `geo.py spacing --cols … --line … --span … --center lat,lon --ridge ridge.json` | `corridors.md` 4.3, `geometry.md` 7.4 / 7.7 |
+| Clear street layout, no anchor | `osm.py street-scan` to filter intersections → `tiles.py sheet` → street view | `corridors.md` |
+| No near-duplicates from reverse image search, no text, only a set of scene elements (road spec + adjacent features + landform) | **Don't hand-pick spots first**: write the scene as one English query and let CLIP rank with `sat_scan.py grid --bbox <coastal strip/corridor> --zoom 17 --cell 360 --query … --neg …`; look only at the top 20–30 thumbnails; `grid` beats `points` because OSM features like `amenity=parking` may be incomplete | `search.md` |
+| ≥4 points of known location in the frame (window views, looking down; also level shots of distant towers, bridges, piers — fix the height) | `pose.py solve` solves camera position, heading and height; when several candidate positions all fit, score them one by one with `pose.py check --cands`; only robust Δchi2 > 9 may go to `board.py exclude --computed` | `geometry.md` section 10 |
+| Want to exclude by "there's no X in the frame" | `geo.py frame` first computes whether X should be inside the frame, large enough and not occluded; only what it says can exclude goes to `board.py exclude --computed` | `geometry.md` section 11 |
+| An unnamed building of a recognizable class, search region narrowed | Enumerate with `osm.py find` → nearby views facing each building with `gsv.py targets` → rank with `match.py`; use bounded batches | `search.md` section 6 |
+| Recognizable facility type (grain dryer tower, feed mill, sugar mill, concrete batching plant) | Look up the industry's distribution → enumerate large buildings with `osm.py buildings` → rank with `sat_scan.py points` | `search.md` |
+| Stores of a chain's sub-brand | First search opening press releases for the address; use store locators only as a candidate pool → `osm.py along` + street-view sampling | `search.md` |
+| Plane window, drone shots looking down | Aerial branch | `aerial.md` |
+
+### Step 4: finding the spot in satellite imagery — the machine ranks first
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/sat_scan.py grid --bbox <scan_bbox> --zoom 17 --preset track --multi-scale --top 30 --out sat.json --sheet sat_top.jpg --heat heat.jpg
+uv run ${CLAUDE_SKILL_DIR}/scripts/poi.py "<district> <school, in the local language>" --city <city> --region <cc> --out schools.json      # seeds: --seeds schools.json boosts nearby cells
+uv run ${CLAUDE_SKILL_DIR}/scripts/sat_scan.py points --points big.json --preset factory --out r.json --sheet r.jpg   # rank candidate points from osm.py buildings / poi.py
+```
+
+- Presets: track (running tracks), stadium, factory, silo, dam, bridge, quarry, solar, greenhouse, port; custom `--query`. In tests: across 300-odd cells of an urban area, more than half of the OSM-mapped running tracks made the top 30; in an old town in China where OSM is blank, a school's sports field still ranked first. **It ranks, it doesn't decide**: look at the thumbnails of the top 20–30 cells, then check them against the bearing and shape in the photo.
+- Translate the image description into top-down features before looking: curved buildings, octagonal pavilion roofs, sports courts, parking spaces perpendicular to a railway; for tall buildings look at the base; imagery has a date.
+- With many candidates, make a candidate table: one row per point, one column per criterion directly visible in the photo.
+- Nothing in the top 30 matches: first go back to the "candidates down-weighted by inference" listed by `board.py check` and to the falsification conditions, then switch preset or go to z18, and only then widen the area.
+
+### Step 5: confirmation — street view is ranked first too
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/baidu_pano.py scan <lat,lon> --radius 300 --out panos.json                     # the street-view script the region card names (CN: baidu_pano.py); otherwise gsv.py
+uv run ${CLAUDE_SKILL_DIR}/scripts/match.py rank --query photo.jpg --panos panos.json --toward <landmark lat,lon> --spread 15 --refine sift --top 10 --out m.json --sheet m.jpg
+uv run ${CLAUDE_SKILL_DIR}/scripts/match.py rank --query photo.jpg --items around.index.json --render gsv --spread-headings -30,0,30 --out m.json --sheet m.jpg
+```
+
+- `match.py` coarse-ranks by DINOv2 global similarity and fine-ranks by SIFT inliers; in tests, ground-truth street views of the same place from different years all made the top 4. Open only the top 10 and compare **invariant features** (building outline, window positions, balconies, pole positions, curbs, ridgelines), not vehicles, signs or foliage. ≥2 features for road level, ≥3 for building level. Not a single image with ≥15 inliers **doesn't mean it's wrong**: with a change of season, an old capture, or the photo taken from the sidewalk while street view was shot from the middle of the road, the ground truth had only 5 and 0–8 inliers in tests (two cases); first open the top 10 and compare invariant features, and only if none fit change `--spread-headings` or widen `--within`. The global score gets dominated by season (a blossom-season capture ranks high wherever it is), so compare against a historical capture from the same season as the photo when you can (`gsv.py sheet --date`).
+- With many panorama points, group by date and road; `sheet --road <road name> --spread 60` shows one road only; older captures have a more open view.
+- No street view doesn't mean you can't confirm: compare ridgelines with `terrain.py view --photo`; find a name for the candidate facility (OSM name, nearby place name + the facility-type word in the local language) and search news, encyclopedias and official-site photos to compare facade details.
+- When street view is many years older than the photo, go by old buildings and permanent structures.
+
+### Step 6: fix the camera position and write the output
+
+- Look back: at the matching street-view point, turn 180° and see what's on the photographer's side.
+- A camera position needs two independent constraints (`geo.py intersect` sight-line intersection, `geo.py line` alignment line, `pose.py` multi-point solve, camera height, reverse street view); with only one, building-level confidence is at most "medium".
+- When there's no measurable shadow, use lit faces for the heading: `sun.py facing --lit left --shaded camera`. For photos taken from a car, boat or train, state the direction of travel.
+
+```bash
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py check                      # before concluding: do exclusions have files, does the main answer have verified evidence, which clues went unused
+uv run ${CLAUDE_SKILL_DIR}/scripts/board.py report --merge result.json # main answer = top-ranked; alternatives, exclusions and unused clues are written into result.json automatically
+uv run ${CLAUDE_SKILL_DIR}/scripts/evidence.py spec.json --out evidence.jpg
+```
+
+Show `evidence.jpg` to the user together with the answer, without waiting to be asked. A road-level claim from satellite imagery needs a ≥z18 crop, not a z17 glance.
+
+Output:
+1. One-sentence conclusion: place + camera position + heading (+ direction of travel and capture time, where applicable)
+2. Coordinates: WGS84, plus the local datum when the region card names one (`geo.py convert`), **with error radius**
+3. Evidence image (satellite image marking the camera position and heading wedge + comparison images)
+4. Reasoning chain: clue → inference → **commands actually run and files produced** → extent
+5. Tiered confidence (table below). **Rate each level separately; the tier you report is the finest level rated "medium" or above**: a low building level doesn't drag down a high area level
+6. Excluded candidates and reasons, alternatives and discriminating tests, clues not used or not resolved (generated by `board.py report`)
+7. When you can't pin a point: which level is settled + what information is still needed
+
+Use English for tool messages, report headings and generated labels. Preserve source text (OCR, place names, service responses) verbatim as evidence; explain or translate it for the reader. Write the agent's final report in the user's language. In Chinese, use 高/中/低 for high/medium/low and 城市/片区/路/楼/楼层 for city/area/road/building/floor.
+
+| Level | High | Medium | Low |
+|---|---|---|---|
+| City | Text, plates, area codes or a confirmed anchor | Several independent weak clues agree | A single weak clue, or only the hint |
+| Area | A unique facility or landmark matches ≥3 top-down features in satellite imagery (whole candidate area checked, no second match) | The most similar spot in the candidate area, with candidates still unchecked | Inferred |
+| Road | Ground-level match on ≥2 unique features | Layout consistent, 1 unique feature; **when there is no ground-level imagery at all**: area level high + bearing self-check passed | Satellite layout only |
+| Building | Two independent constraints + ground-level match on ≥3 features | One of the two | Inferred |
+| Floor | Two kinds of reference agree | A single reference | Don't give |
+
+## Budget and stopping conditions
+
+- `intake.py` counts as one call; if reverse image search with 3 different keyword sets finds nothing, stop and go back to the checklist for other clues.
+- **While candidates still can't be separated, don't scan any point one by one** (when `board.py next` says "can't separate", do the discriminating tests first); if they still can't be separated after the cheap tests, scan in the order it gives, the first 3 pages of each candidate's built-up area first.
+- Scanning and confirmation always rank first: look at the top 30 cells from `sat_scan.py` and the top 10 images from `match.py`; widen only when all of the top ones are wrong, instead of paging through.
+- Run `osm.py coverage` before enumerating candidates with OSM: districts with sparse data get silently excluded; switch to `sat_scan.py grid` and say so in the conclusion.
+- Scan panoramas in batches of at most 500 points per area. When a batch or several areas yield no match, review candidate generation, search coverage and down-weighted candidates; then change the approach or widen the justified search scope. A fixed number of unmatched areas is not a reason to end the investigation.
+- A failed or unavailable service blocks that route, not the whole investigation. Consider other feasible sources or methods; do not repeat unchanged failing requests.
+- Before stopping, `board.py check`: go back through the top 20 candidates, in ranking order, that were down-weighted by inference but not excluded.
+- Conclude when evidence supports the requested location level, the user asks to stop or a user-set budget is reached, or no remaining feasible action is likely to distinguish the candidates. If unresolved, use `board.py report` to state the supported level, actual search coverage, attempted routes, blockers and missing evidence; do not invent a coordinate or precision to finish.
+
+## Runtime environment
+
+- Python 3.10+, `uv`, and `curl`. Always use `uv run ${CLAUDE_SKILL_DIR}/scripts/xxx.py`; each script declares its dependencies. `scripts/` in references is relative to this skill directory.
+- On first setup or after a runtime failure, run `uv run ${CLAUDE_SKILL_DIR}/scripts/doctor.py`; add `--network` to check service reachability. Read the English checks and fixes before starting an expensive scan. It uploads no photos and does not load ML models.
+- Reverse image search uses local Google Chrome, with automatic fallback to Playwright Chromium (`uvx playwright install chromium`). If neither starts, use `intake.py --no-rev` and report the skipped search. OCR prefers Apple Vision on macOS and uses RapidOCR elsewhere or as a fallback.
+- `match.py` and `sat_scan.py` install ML dependencies and download model weights on first use. Allow extra time and disk space.
+- Cache goes to `.geo-cache/` in the current directory; the candidate board is `board.json` in the current directory. Script list and data sources: `references/data-sources.md`.
+- macOS has no `timeout` command; in zsh `$var` doesn't word-split, so use `bash -c` or `${=var}` in loops. A province-wide Overpass query can take several minutes; run it in the background.
+
+
+---
+
+<a id="source-e3c492c064051e96"></a>
+
+## 来源文件：ai-skills/07-geolocation/geo-sleuth/UPSTREAM.md
+
+# 上游来源
+
+- 项目：[Oldcircle/geo-sleuth](https://github.com/Oldcircle/geo-sleuth)。
+- 本次收录版本：`836d70eea196b194391017e6e018e04ccc85aaa4`。
+- 原始路径：`skills/geo-sleuth/`；由已安装的完整技能目录同步，排除 Python 缓存。
+- 许可证：[MIT](https://github.com/EDSlxh/AI-Skills-Library/blob/main/ai-skills/07-geolocation/geo-sleuth/LICENSE)，保留上游版权和许可文本。
+
+本目录保留原始技能、脚本、地区数据和参考资料；仅新增本来源说明与上游许可证。实际定位依赖执行环境、地图服务和照片证据。读取手机资料包只提供指令和参考资料，脚本、模型与服务须在具备相应能力的环境运行。

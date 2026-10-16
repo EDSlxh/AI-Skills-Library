@@ -6,6 +6,8 @@
 | --- | --- | --- |
 | learn-scientifically | 用户希望学会主题、练习纠错、复习、续学或查询实际学习进度 | [科学学习](ai-skills/06-learning/learn-scientifically/SKILL.md) |
 | learn-video | 从视频、音频或字幕取得原文，再整理或应用知识；用户希望自己学习时取得材料后衔接科学学习 | [学习视频](ai-skills/06-learning/learn-video/SKILL.md) |
+| learning-cards | 已有可用的 MCP Apps 题卡服务，需要呈现题卡并核对真实提交 | [聊天内题卡](ai-skills/06-learning/learning-cards/SKILL.md) |
+| geo-sleuth | 根据照片查找拍摄位置或时间，需要脚本、地图与可核验的证据 | [照片定位](ai-skills/07-geolocation/geo-sleuth/SKILL.md) |
 | grilling | 用户要求盘问或压力测试重要想法，或关键产品、架构决策确需澄清 | [需求与设计压力测试](ai-skills/01-product/grilling/SKILL.md) |
 | requirement-to-plan | 已有明确的软件需求，需要实施计划、范围和验收标准 | [需求到实施计划](ai-skills/01-product/requirement-to-plan/SKILL.md) |
 | android-app-engineering | 实际设计、实现或修改 Kotlin、Compose 等安卓应用工程 | [Android 工程](ai-skills/02-android/android-app-engineering/SKILL.md) |

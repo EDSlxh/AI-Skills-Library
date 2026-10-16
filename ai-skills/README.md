@@ -11,6 +11,8 @@
 - [测试调试](05-quality/test-debug-review/SKILL.md)
 - [科学学习](06-learning/learn-scientifically/SKILL.md)
 - [学习视频](06-learning/learn-video/SKILL.md)
+- [聊天内题卡](06-learning/learning-cards/SKILL.md)：配合已有题卡插件使用。
+- [照片定位](07-geolocation/geo-sleuth/SKILL.md)：包含工具脚本、地区数据、参考资料和上游许可。
 
 ## 推荐协作流程
 **Grilling（提出关键问题、确定决策）→ Requirement-to-Plan（确认范围、排出实施计划）→ Android / OCR / Data（执行开发）→ Test-Debug-Review（验证审查）**。
