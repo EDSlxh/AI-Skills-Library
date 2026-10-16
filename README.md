@@ -8,6 +8,7 @@
 - [学习项目指令](mobile/project-instructions.txt)：用于独立学习项目。
 - [手机项目资料包](mobile/mobile-skills-bundle.md)：上传到项目 Sources，包含索引、全部 Skill 正文与学习引用。
 - [技能目录及开发协作](ai-skills/README.md)。
+- [高中函数学习测试项目](examples/function-learning/README.md)：含课程、题库、初始化模板与一份可上传的合并文件。
 
 科学学习支持目标、示例、主动尝试、反馈、图解和间隔复习。真实互动题卡仍需要可用的题卡服务与聊天宿主支持；当前仓库没有运行该服务，也不保存个人成绩。
 
