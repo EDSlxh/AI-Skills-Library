@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2378,
+      "sha256": "171b48a4ea20385be36824b877b40c1a2bdcea8849c559b8867bb0a49a80b798",
+      "git_blob_sha": "27231d9a466a8128be769460aff38a6e80c30166"
+    },
+    {
+      "path": "RESTORE.md",
+      "bytes": 5095,
+      "sha256": "62b74409a20190b798e1bc9eca8426c8836cceb7c5cf723249c7434694695715",
+      "git_blob_sha": "8f42f5c79fc750f4dad3bb9f0defb18f9b6d5481"
+    },
+    {
+      "path": "Restore-To-D.ps1",
+      "bytes": 3182,
+      "sha256": "089e86110b90948997c60b28c95b0da53362fffea9c6d864c26b496e3e529c7f",
+      "git_blob_sha": "a00869d0646ac5b1e0229895860a31a5ba1186a4"
+    },
+    {
+      "path": "Verify-Package.ps1",
+      "bytes": 572,
+      "sha256": "cb946ce8e374ef45c0de2eeae67237c0a257a5a77192f8b897e692a59192f47b",
+      "git_blob_sha": "210188ccdcc8f51309bef734163ae2d9e3ef4749"
+    },
+    {
+      "path": "inventory.csv",
+      "bytes": 1738,
+      "sha256": "5a31dd4bb0a4b68a21d2d25c33ad0cfb2a6e4fc9d612e2f631af6df236e017e9",
+      "git_blob_sha": "1a20423d76f7fff82cf3e8101fdc089178ba5c22"
+    },
+    {
+      "path": "inventory.json",
+      "bytes": 8439,
+      "sha256": "798dd9a7df33965fb2d0d2ff7d9e5978989b8acc2c55fcb67485180c9641cfd8",
+      "git_blob_sha": "f071dcfa69006b66fde12e2b0ac6f82f568471d7"
+    },
+    {
+      "path": "sources.json",
+      "bytes": 2220,
+      "sha256": "e1559a16dc8aec72d6a9f9d53afbd03f4bbbe1184f47ca5e02f42783798815d5",
+      "git_blob_sha": "ef2603d22bf40e51e2feedc6b7a9b6e2d2b81811"
+    }
+  ]
+}

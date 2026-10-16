@@ -1,0 +1,14 @@
+﻿category,path,unique_GiB,file_paths,origin
+projects-codex,%USERPROFILE%\Documents\Codex,6.684,141529,Local authored projects plus downloaded dependencies; individual Git origins in local inventory
+projects-chatgpt,%USERPROFILE%\Documents\ChatGPT,0.0,20,Local user documents; no verified single upstream
+codex-state,%USERPROFILE%\.codex,0.693,6277,"OpenAI app state, plugins, credentials and local conversations; contents NOT in either source archive"
+skills,%USERPROFILE%\.agents,0.002,99,Installed personal skills; known library and upstream recorded separately
+codex-runtimes,%USERPROFILE%\.cache\codex-runtimes,1.299,22468,Downloaded by Codex runtime provisioning; exact original download URL not established
+uv-cache,%USERPROFILE%\AppData\Local\uv,4.483,87116,uv-managed packages/cache; exact per-file download URL not established
+npm-cache,%USERPROFILE%\AppData\Local\npm-cache,1.13,31679,npm-managed package cache; exact per-file download URL not established
+pip-cache,%USERPROFILE%\AppData\Local\pip\Cache,0.037,92,pip-managed package cache; exact per-file download URL not established
+hf-cache,%USERPROFILE%\.cache\huggingface,0.084,13,Hugging Face cache; geo model weights are inside the project runtime instead
+rg-cache,%USERPROFILE%\.cache\vscode-ripgrep,0.002,1,Downloaded ripgrep helper; exact original download URL not established
+uv-python,%USERPROFILE%\AppData\Roaming\uv,0.058,3392,uv-managed Python installations; exact per-file download URL not established
+portable-tools,%USERPROFILE%\.local\bin,0.031,3,User-installed uv/uvx/uvw binaries; origin inferred from executable names
+openai-binaries,%USERPROFILE%\AppData\Local\OpenAI,0.651,2374,OpenAI/Codex versioned application binaries and update cache

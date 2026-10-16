@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-10-17T01:16:42.162278+08:00",
+  "library": {
+    "url": "https://github.com/EDSlxh/AI-Skills-Library",
+    "local_commit": "7fdad50ab1b77937b2141c088c8542f0308174eb",
+    "tree": "5f1e1492bbc712e10ee8b7a3d789c17fcee45eae"
+  },
+  "geo_sleuth": {
+    "url": "https://github.com/Oldcircle/geo-sleuth",
+    "commit": "836d70eea196b194391017e6e018e04ccc85aaa4",
+    "upstream_path": "skills/geo-sleuth/",
+    "license": "MIT",
+    "deployed_local_overrides": [
+      "scripts/baidu_pano.py",
+      "scripts/revimg.py"
+    ],
+    "override_backup": "LOCAL-ONLY-selected-sources.zip on local disk, not published"
+  },
+  "models": [
+    {
+      "model": "openai/clip-vit-base-patch32",
+      "revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+      "file": "pytorch_model.bin",
+      "bytes": 605247071,
+      "sha256": "a63082132ba4f97a80bea76823f544493bffa8082296d62d71581a4feff1576f",
+      "source_url": "https://huggingface.co/openai/clip-vit-base-patch32/resolve/3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268/pytorch_model.bin"
+    },
+    {
+      "model": "facebook/dinov2-small",
+      "revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+      "file": "model.safetensors",
+      "bytes": 88249960,
+      "sha256": "ae1e99fcefd534ed978cdeb8326f08030c96e28b7a81ffcbc98a857c84d14be1",
+      "source_url": "https://huggingface.co/facebook/dinov2-small/resolve/ed25f3a31f01632728cabb09d1542f84ab7b0056/model.safetensors"
+    }
+  ],
+  "tools": {
+    "python": "3.14.0 observed during deployment",
+    "uv": "0.13.1 observed during deployment",
+    "git": "2.52.0.windows.1 observed during deployment"
+  },
+  "official_sources": {
+    "codex": "https://learn.chatgpt.com/docs/config-file/config-advanced",
+    "uv": "https://docs.astral.sh/uv/",
+    "git": "https://git-scm.com/",
+    "python": "https://www.python.org/",
+    "npm": "https://docs.npmjs.com/",
+    "huggingface": "https://huggingface.co/docs/huggingface_hub/en/guides/manage-cache"
+  },
+  "limits": "Official source links are reconstruction references; they do not prove the original download URL of every cached file. Package dependency resolution is not locked by this index."
+}
