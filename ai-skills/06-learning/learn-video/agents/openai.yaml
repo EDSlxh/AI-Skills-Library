@@ -1,0 +1,7 @@
+interface:
+  display_name: "学习视频"
+  short_description: "按来源选择免费本地字幕提取、转录和截帧方式，再由助手理解与应用知识"
+  default_prompt: "使用 $learn-video，先询问缺失的来源和学习目标，按材料选择免费本地提取方式，遇到失败切换可用路径，再由你学习和应用视频知识。"
+
+policy:
+  allow_implicit_invocation: true

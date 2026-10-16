@@ -1,0 +1,67 @@
+{
+  "repository": "EDSlxh/AI-Skills-Library",
+  "source_digest": "943cb5ed853a9ecbd9aacf5e8bdf2e099f14659e488a3b1b1fa022a8c2f37be7",
+  "bundle_sha256": "38fad53c88ecdbe8b8ab7d6a800702d736b59ac74ed0770db8767df82ccb6bc8",
+  "sources": [
+    {
+      "path": "SKILLS.md",
+      "sha256": "b01d84d24dddeaafb4e645121ec3f534843a5e809174d986c0e6657792847b7b"
+    },
+    {
+      "path": "ai-skills/01-product/grilling/SKILL.md",
+      "sha256": "defcfe72033fb5de9375fecc7493b004294c6e4abc85bb786b141b97e71030f5"
+    },
+    {
+      "path": "ai-skills/01-product/requirement-to-plan/SKILL.md",
+      "sha256": "fe0237692c74be89cdb8cd86e8dded7801ae02889f59b4d03fbd513ac0c02edd"
+    },
+    {
+      "path": "ai-skills/02-android/android-app-engineering/SKILL.md",
+      "sha256": "f6ea65bee35c5145eb8cc8c3514be2780a23362008a68904e21dfe67f6540c81"
+    },
+    {
+      "path": "ai-skills/03-vision/transaction-screenshot-ocr/SKILL.md",
+      "sha256": "5e9036cbb9fd371e420cfb39ad109dda57b437ccd2c6cc3412836e26a9c9d32e"
+    },
+    {
+      "path": "ai-skills/04-data/ledger-data-sync/SKILL.md",
+      "sha256": "e577a44f279c334c5fabda14ff0c972404ab1096a525e3ad92288974a0fcde21"
+    },
+    {
+      "path": "ai-skills/05-quality/test-debug-review/SKILL.md",
+      "sha256": "143c79ba64f06153cb82c5267e8f96cc5a425010fad2cc46496ec78aad3c6def"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/assets/learning-record.md",
+      "sha256": "812f05608014d5e3c825019990f0794a11a915ac094e2730dd5286aa0f1bd98c"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/references/behavior-checks.md",
+      "sha256": "0b20360fefb2608439f1bd214638ab958c75e9b3076dc99f06b3acdc48022e21"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/references/evidence.md",
+      "sha256": "cbcfb144e98901a0d3a855e9a5b6acf37674f93baeeb50fd3485acab20158946"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/references/interaction-and-visuals.md",
+      "sha256": "33e3cf94f77492299763409409802d43609232061a79466a8a28294112c39d50"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/references/learning-state.md",
+      "sha256": "fb7c2742d11ac5e424180928866761adb9ff27b803848f664f7e9670f8073d3e"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/references/mobile-and-cloud.md",
+      "sha256": "f6ab9157443323835f5bdf62cc81104b827a0d26035f950870894ed0e30dcb45"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-scientifically/SKILL.md",
+      "sha256": "214e1a734ba76b99cd16552f6aaec769169f767f0c5f391ff930b26589d33be4"
+    },
+    {
+      "path": "ai-skills/06-learning/learn-video/SKILL.md",
+      "sha256": "e4c5bba60b1fe6d74f2783f4cc6101a877b84c6eaba898cc86f87d7442025752"
+    }
+  ]
+}

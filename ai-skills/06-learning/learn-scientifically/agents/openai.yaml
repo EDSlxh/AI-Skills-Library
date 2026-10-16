@@ -1,0 +1,7 @@
+interface:
+  display_name: "科学学习"
+  short_description: "通过聊天题卡、按需图解、练习反馈与间隔复习，帮助掌握新知识与技能。"
+  default_prompt: "使用 $learn-scientifically 在聊天消息中通过不限时题卡和必要图解带我学习一个新主题，根据我的作答调整讲解，并检查独立应用与复习情况。"
+
+policy:
+  allow_implicit_invocation: true

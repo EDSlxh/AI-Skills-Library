@@ -1,14 +1,16 @@
 # AI-Skills-Library
 
-可复用 AI 开发 Skills，使用标准 `SKILL.md` 结构。
+可复用 AI 开发与学习 Skills，使用标准 `SKILL.md` 结构。自动选择与路径规则见根目录 [SKILLS.md](../SKILLS.md)，手机配置见 [使用指南](../docs/mobile-setup.md)。
 
 ## 技能目录
-- [Grilling — 需求与设计压力测试](ai-skills/01-product/grilling/SKILL.md)
-- [需求到实施计划](ai-skills/01-product/requirement-to-plan/SKILL.md)
-- [Android 工程](ai-skills/02-android/android-app-engineering/SKILL.md)
-- [截图 OCR](ai-skills/03-vision/transaction-screenshot-ocr/SKILL.md)
-- [账本与同步](ai-skills/04-data/ledger-data-sync/SKILL.md)
-- [测试调试](ai-skills/05-quality/test-debug-review/SKILL.md)
+- [Grilling — 需求与设计压力测试](01-product/grilling/SKILL.md)
+- [需求到实施计划](01-product/requirement-to-plan/SKILL.md)
+- [Android 工程](02-android/android-app-engineering/SKILL.md)
+- [截图 OCR](03-vision/transaction-screenshot-ocr/SKILL.md)
+- [账本与同步](04-data/ledger-data-sync/SKILL.md)
+- [测试调试](05-quality/test-debug-review/SKILL.md)
+- [科学学习](06-learning/learn-scientifically/SKILL.md)
+- [学习视频](06-learning/learn-video/SKILL.md)
 
 ## 推荐协作流程
 **Grilling（提出关键问题、确定决策）→ Requirement-to-Plan（确认范围、排出实施计划）→ Android / OCR / Data（执行开发）→ Test-Debug-Review（验证审查）**。
